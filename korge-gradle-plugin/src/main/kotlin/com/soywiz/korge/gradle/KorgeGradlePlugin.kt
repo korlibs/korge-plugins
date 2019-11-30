@@ -76,25 +76,16 @@ class KorgeGradleApply(val project: Project) {
 	}
 
 	private fun Project.configureDependencies() {
-		korge.apply {
-			/*
-			dependencyMulti("com.soywiz.korlibs.klock:klock:${BuildVersions.KLOCK}")
-			dependencyMulti("com.soywiz:kmem:${BuildVersions.KMEM}")
-			dependencyMulti("com.soywiz:kds:${BuildVersions.KDS}")
-			dependencyMulti("com.soywiz:korma:${BuildVersions.KORMA}")
-			dependencyMulti("com.soywiz:korio:${BuildVersions.KORIO}")
-			dependencyMulti("com.soywiz:korim:${BuildVersions.KORIM}")
-			dependencyMulti("com.soywiz:korau:${BuildVersions.KORAU}")
-			dependencyMulti("com.soywiz:kgl:${BuildVersions.KGL}")
-			dependencyMulti("com.soywiz:korag:${BuildVersions.KORAG}")
-			dependencyMulti("com.soywiz:korag-opengl:${BuildVersions.KORAG_OPENGL}")
-			dependencyMulti("com.soywiz:korgw:${BuildVersions.KORGW}")
-			dependencyMulti("com.soywiz:korge:${BuildVersions.KORGE}")
-			dependencyMulti("com.soywiz:korev:${BuildVersions.KOREV}")
-			 */
-		}
 		dependencies {
 			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${BuildVersions.KORGE}")
+			add("commonMainApi", "com.soywiz.korlibs.klock:klock:${BuildVersions.KLOCK}")
+			add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${BuildVersions.KMEM}")
+			add("commonMainApi", "com.soywiz.korlibs.kds:kds:${BuildVersions.KDS}")
+			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${BuildVersions.KORMA}")
+			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${BuildVersions.KORIO}")
+			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${BuildVersions.KORIM}")
+			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${BuildVersions.KORAU}")
+			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${BuildVersions.KORGW}")
 		}
 	}
 

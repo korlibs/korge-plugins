@@ -10,7 +10,6 @@ buildscript {
 	dependencies {
 		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
 		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
-        classpath("gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.13")
 
     }
 }
@@ -73,6 +72,9 @@ object BuildVersions {
 }
 """)
 
+def publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
+def publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
+
 subprojects {
 	repositories {
 		mavenLocal()
@@ -85,10 +87,6 @@ subprojects {
 	apply plugin: "maven-publish"
     apply plugin: "kotlin"
 
-    // Publishing
-	def publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
-	def publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
-
 	//println("project: ${project.name}")
 
 	if (publishUser != null && publishPassword != null) {
@@ -99,7 +97,7 @@ subprojects {
 						username = publishUser
 						setPassword(publishPassword)
 					}
-					url = uri("https://api.bintray.com/maven/korlibs/korlibs/${project.property("project.package")}/")
+					url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
 				}
 			}
 
@@ -122,5 +120,28 @@ subprojects {
 				}
 			}
 		}
+	}
+}
+
+task publish(type: Task) {
+	subprojects {
+		dependsOn(":${project.name}:publish")
+	}
+	doLast {
+		def subject = project.property("project.bintray.org")
+		def repo = project.property("project.bintray.repository")
+		def _package = project.property("project.bintray.package")
+		def version = project.version
+
+		((HttpURLConnection)new URL("https://bintray.com/api/v1/content/$subject/$repo/$_package/$version/publish").openConnection()).with({
+			requestMethod = 'POST'
+			doOutput = true
+
+			setRequestProperty("Authorization", "Basic " + "$publishUser:$publishPassword".bytes.encodeBase64().toString())
+			outputStream.withPrintWriter({printWriter ->
+				printWriter.write('{"discard": false, "publish_wait_for_secs": -1}')
+			})
+			System.out.println(inputStream.text)
+		})
 	}
 }

@@ -31,6 +31,7 @@ def setKDep(ExternalModuleDependency it) {
 
 dependencies {
 	rtArtifacts("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}") { setKDep(it) }
+	rtArtifacts("com.soywiz.korlibs.korinject:korinject-jvm:${version("korinject")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.kds:kds-jvm:${version("kds")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.kmem:kmem-jvm:${version("kmem")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korio:korio-jvm:${version("korio")}") { setKDep(it) }
