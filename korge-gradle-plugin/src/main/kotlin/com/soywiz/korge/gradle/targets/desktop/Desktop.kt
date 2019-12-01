@@ -78,29 +78,24 @@ fun Project.configureNativeDesktop() {
 
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
+
 		for (target in when {
 			isWindows -> listOf(kotlin.mingwX64())
 			isMacos -> listOf(kotlin.macosX64())
 			isLinux -> listOf(kotlin.linuxX64())
 			else -> listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())
 		}) {
-			target.apply {
-				compilations["main"].apply {
-					//println(this.binariesTaskName)
-					for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-						getLinkTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
-					}
-					defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
-				}
-				/*
-            binaries {
-                executable {
-                    println("linkTask = $linkTask")
-                    linkTask.dependsOn(prepareKotlinNativeBootstrap)
-                }
-            }
-            */
+			val mainCompilation = target.compilations["main"]
+			//println("TARGET: $target")
+			//println(this.binariesTaskName)
+			for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+				mainCompilation.getLinkTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
 			}
+			//println("File(buildDir, \"platforms/native-desktop\"): ${File(buildDir, "platforms/native-desktop")}")
+
+			//mainCompilation.defaultSourceSet.kotlin.srcDir(File(buildDir, "platforms/native-desktop"))
+			mainCompilation.defaultSourceSet.kotlin.srcDir(project.file("build/platforms/native-desktop/"))
+
 		}
 	}
 
