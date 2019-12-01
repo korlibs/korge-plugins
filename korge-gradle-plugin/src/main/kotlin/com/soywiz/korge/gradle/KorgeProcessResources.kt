@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.resources.*
 import org.gradle.api.*
+import java.net.*
 
 fun Project.addGenResourcesTasks() = this {
 	val genMainResourcesDir = buildDir["genMainResources"]
@@ -50,6 +51,7 @@ fun Project.addGenResourcesTasks() = this {
 					logger.info("kotlin.sourceSets.names: ${kotlin.sourceSets.names}")
 					logger.info("allResourcesDirs: $allResourcesDirs")
 					logger.info("resourcesDirs: $resourcesDirs")
+					logger.info("korge.defaultPluginsClassLoader: ${(korge.defaultPluginsClassLoader as URLClassLoader).urLs.toList()}")
 
 					buildService.processResourcesFolders(ResourceProcessor.Group(korge.defaultPluginsClassLoader), resourcesDirs, outDir) { logger.info(it) }
 				}

@@ -22,6 +22,15 @@ configurations {
 	rtArtifacts { }
 }
 
+//println(configurations.names)
+
+//configurations.compileClasspath.extendsFrom(configurations.rtArtifacts)
+configurations.runtime.extendsFrom(configurations.rtArtifacts)
+//configurations.runtimeOnly.extendsFrom(configurations.rtArtifacts)
+//configurations.runtimeClasspath.extendsFrom(configurations.rtArtifacts)
+//configurations.runtime.extendsFrom(configurations.rtArtifacts)
+//configurations.runtime.dependencies.add(configurations)
+
 def setKDep(ExternalModuleDependency it) {
 	it.targetConfiguration = "default"
 	//it.targetConfiguration = "runtime"
@@ -104,6 +113,12 @@ publishing {
 			version = project.version
 
 			from components.java
+
+			pom.withXml {
+				asNode().dependencies.dependency.each { dep ->
+					dep.parent().remove(dep)
+				}
+			}
 		}
 	}
 }
