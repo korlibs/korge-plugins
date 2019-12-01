@@ -19,7 +19,15 @@ def version(String name) {
 }
 
 configurations {
-	rtArtifacts { }
+	rtArtifacts {
+		transitive = true
+		resolutionStrategy { strat ->
+			strat.eachDependency { details ->
+				//details.target.
+				//println(details.target.name)
+			}
+		}
+	}
 }
 
 //println(configurations.names)
@@ -33,12 +41,24 @@ configurations.runtime.extendsFrom(configurations.rtArtifacts)
 
 def setKDep(ExternalModuleDependency it) {
 	it.targetConfiguration = "default"
-	//it.targetConfiguration = "runtime"
 	it.attributes { attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm) }
+	//it.targetConfiguration = "default"
 	it.transitive(true)
 }
 
 dependencies {
+	rtArtifacts("net.java.dev.jna:jna:${version("jna")}")
+	rtArtifacts("net.java.dev.jna:jna-platform:${version("jna")}")
+
+	rtArtifacts("org.jogamp.gluegen:gluegen-rt-main:2.3.2")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-windows-amd64")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-windows-i586")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-macosx-universal")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-i586")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-amd64")
+	rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-armv6")
+
 	rtArtifacts("com.soywiz.korlibs.klock:klock-jvm:${version("klock")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korinject:korinject-jvm:${version("korinject")}") { setKDep(it) }
@@ -64,10 +84,15 @@ dependencies {
 
 tasks.create("processrtRtArtifacts") {
 
-	inputs.files(configurations["rtArtifacts"])
+	inputs.files(configurations.rtArtifacts)
 	outputs.dir("src/main/resources")
 	doLast {
-		for (file in configurations["rtArtifacts"]) {
+		//println(configurations.rtArtifacts.resolve())
+
+		configurations.rtArtifacts.resolvedConfiguration.resolvedArtifacts.each { dep ->
+			//println dep.name
+		}
+		for (file in configurations.rtArtifacts.resolve()) {
 			if (file.name.contains("kotlin-stdlib")) continue
 			if (file.name.contains("annotations-13")) continue
 			println(file)
