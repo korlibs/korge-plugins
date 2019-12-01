@@ -62,10 +62,12 @@ class KorgeGradleApply(val project: Project) {
 
 		project.configureJvm()
 
-		project.configureNativeDesktop()
-		project.configureNativeAndroid()
-		if (isMacos) {
-			project.configureNativeIos()
+		if (korge.nativeEnabled) {
+			project.configureNativeDesktop()
+			project.configureNativeAndroid()
+			if (isMacos) {
+				project.configureNativeIos()
+			}
 		}
 		project.configureCordova()
 		project.configureJavaScript()

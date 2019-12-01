@@ -120,6 +120,8 @@ class KorgeExtension(val project: Project) {
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"
 
+	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
+
 	var icon: File? = project.projectDir["icon.png"]
 
 	var gameCategory: GameCategory? = null
