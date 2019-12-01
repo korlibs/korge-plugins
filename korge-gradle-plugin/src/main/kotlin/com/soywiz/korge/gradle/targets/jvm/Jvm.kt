@@ -31,29 +31,29 @@ fun Project.configureJvm() {
         }
     }
 
-    val runJvm = project.addTask<JavaExec>("runJvm", group = GROUP_KORGE) { task ->
-		group = GROUP_KORGE_RUN
-		dependsOn("jvmMainClasses")
-		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+	for (firstThread in listOf(false, true)) {
+		val extra = if (firstThread) "FirstThread" else ""
+		project.addTask<JavaExec>("runJvm$extra", group = GROUP_KORGE) { task ->
+			group = GROUP_KORGE_RUN
+			dependsOn("jvmMainClasses")
+			systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
-        task.doFirst {
-            //task.classpath = gkotlin.targets["jvm"]["compilations"]["test"]["runtimeDependencyFiles"] as? FileCollection?
-            val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
-            val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
-            //println(jvmCompilation)
-            //println(mainJvmCompilation)
-            //println(mainJvmCompilation.runtimeDependencyFiles.toList())
-            //println(mainJvmCompilation.compileDependencyFiles.toList())
+			task.doFirst {
+				val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
+				val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
 
-            //task.classpath = gkotlin.targets["jvm"]["compilations"]["main"]["runtimeDependencyFiles"] as? FileCollection?
-            task.classpath = mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+				task.classpath =
+					mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
 
-            if (OS.isMac) {
-                task.jvmArgs("-XstartOnFirstThread")
-            }
+				if (firstThread) {
+					if (OS.isMac) {
+						task.jvmArgs("-XstartOnFirstThread")
+					}
+				}
 
-            task.main = korge.jvmMainClassName
-        }
+				task.main = korge.jvmMainClassName
+			}
+		}
 	}
 
 	for (jvmJar in project.getTasksByName("jvmJar", true)) {
