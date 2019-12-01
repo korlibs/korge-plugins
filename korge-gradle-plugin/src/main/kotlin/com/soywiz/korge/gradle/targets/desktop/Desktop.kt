@@ -207,12 +207,17 @@ private fun Project.addNativeRun() {
 	afterEvaluate {
 		if (isMacos) {
 			for (buildType in RELEASE_DEBUG) {
+				val ktarget = gkotlin.targets["macosX64"]
+				//(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
+				val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
+
 				addTask<Task>(
 					"packageMacosX64App${buildType.name.capitalize()}",
 					group = GROUP_KORGE_PACKAGE,
-					//dependsOn = listOf("linkMain${buildType.name.capitalize()}ExecutableMacosX64")
-					dependsOn = listOf("link${buildType.name.capitalize()}ExecutableMacosX64")
+					dependsOn = listOf(compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project))
+					//dependsOn = listOf("link${buildType.name.capitalize()}ExecutableMacosX64")
 				) {
+
 					group = GROUP_KORGE_PACKAGE
 					doLast {
 						val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
