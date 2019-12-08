@@ -1,7 +1,8 @@
 ## Plugins for KorGE
 
-IntelliJ plugin:
+Gradle plugin:
 
 ```bash
-./gradlew runIde
+./gradlew publishToMavenLocal
+./gradlew publish
 ```

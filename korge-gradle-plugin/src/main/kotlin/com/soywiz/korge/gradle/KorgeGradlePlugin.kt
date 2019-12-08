@@ -79,15 +79,15 @@ class KorgeGradleApply(val project: Project) {
 
 	private fun Project.configureDependencies() {
 		dependencies {
-			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${BuildVersions.KORGE}")
-			add("commonMainApi", "com.soywiz.korlibs.klock:klock:${BuildVersions.KLOCK}")
-			add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${BuildVersions.KMEM}")
-			add("commonMainApi", "com.soywiz.korlibs.kds:kds:${BuildVersions.KDS}")
-			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${BuildVersions.KORMA}")
-			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${BuildVersions.KORIO}")
-			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${BuildVersions.KORIM}")
-			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${BuildVersions.KORAU}")
-			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${BuildVersions.KORGW}")
+			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${korgeVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
 		}
 	}
 
@@ -110,13 +110,10 @@ class KorgeGradleApply(val project: Project) {
 		ext.set("kormaVersion", kormaVersion)
 		ext.set("korauVersion", korauVersion)
 		ext.set("korimVersion", korimVersion)
-		//ext.set("koruiVersion", koruiVersion)
-		//ext.set("korevVersion", korevVersion)
 		ext.set("korgwVersion", korgwVersion)
 		ext.set("korgeVersion", korgeVersion)
 		ext.set("kotlinVersion", kotlinVersion)
 		ext.set("coroutinesVersion", coroutinesVersion)
-		//ext.set("kotlinVersion", KotlinVersion.CURRENT.toString())
 	}
 
 	private fun Project.configureKotlin() {
