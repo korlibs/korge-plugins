@@ -92,15 +92,52 @@ tasks.create("processrtRtArtifacts") {
 		configurations.rtArtifacts.resolvedConfiguration.resolvedArtifacts.each { dep ->
 			//println dep.name
 		}
-		for (file in configurations.rtArtifacts.resolve()) {
-			if (file.name.contains("kotlin-stdlib")) continue
-			if (file.name.contains("annotations-13")) continue
-			println(file)
+
+		def files = [""].toSet()
+
+		for (jarFile in configurations.rtArtifacts.resolve()) {
+			if (jarFile.name.contains("kotlin-stdlib")) continue
+			if (jarFile.name.contains("annotations-13")) continue
+
+			def baseJarTree = zipTree(jarFile)
+
+			println("Including: $jarFile")
 			copy {
-				from(zipTree(file))
+				from(baseJarTree.matching {
+					exclude "META-INF/services/*"
+				})
 				into("src/main/resources")
 				//into("libs")
 			}
+			def tree = baseJarTree.matching {
+				include "META-INF/services/*"
+			}
+
+			tree.visit { details ->
+				if (!details.isDirectory()) {
+					def relative = details.relativePath.toString()
+					def contents = details.file.text
+					def targetFile = new File(project.projectDir, "src/main/resources/${relative}")
+					def firstSet = !files.contains(relative)
+					if (firstSet) {
+						files.add(relative)
+					}
+					if (firstSet){
+						targetFile.text = contents
+					} else {
+						targetFile.text = targetFile.text + "\n" + contents
+					}
+					println("Merging service: $relative")
+				}
+			}
+			/*
+			println(tree.root)
+			tree.each { file ->
+
+				def relative = file.relativePath(jarFile)
+				println("HELLO: ${jarFile} -- ${file}")
+			}
+			 */
 		}
 	}
 }
