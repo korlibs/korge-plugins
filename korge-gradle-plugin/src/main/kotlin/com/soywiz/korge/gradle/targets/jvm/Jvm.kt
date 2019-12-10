@@ -31,8 +31,12 @@ fun Project.configureJvm() {
         }
     }
 
-	for (firstThread in listOf(false, true)) {
-		val extra = if (firstThread) "FirstThread" else ""
+	for (firstThread in listOf(null, false, true)) {
+		val extra = when {
+			firstThread == true -> "FirstThread"
+			firstThread == false -> "OtherThread"
+			else -> ""
+		}
 		project.addTask<JavaExec>("runJvm$extra", group = GROUP_KORGE) { task ->
 			group = GROUP_KORGE_RUN
 			dependsOn("jvmMainClasses")
@@ -45,7 +49,7 @@ fun Project.configureJvm() {
 				task.classpath =
 					mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
 
-				if (firstThread) {
+				if (firstThread != false) {
 					if (OS.isMac) {
 						task.jvmArgs("-XstartOnFirstThread")
 					}
