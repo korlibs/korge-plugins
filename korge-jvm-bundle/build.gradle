@@ -48,15 +48,6 @@ dependencies {
 	rtArtifacts("net.java.dev.jna:jna:${version("jna")}")
 	rtArtifacts("net.java.dev.jna:jna-platform:${version("jna")}")
 
-	//rtArtifacts("org.jogamp.gluegen:gluegen-rt-main:2.3.2")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-windows-amd64")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-windows-i586")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-macosx-universal")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-i586")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-amd64")
-	//rtArtifacts("org.jogamp.joal:joal:2.3.2:natives-linux-armv6")
-
 	rtArtifacts("com.soywiz.korlibs.klock:klock-jvm:${version("klock")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.krypto:krypto-jvm:${version("krypto")}") { setKDep(it) }
 	rtArtifacts("com.soywiz.korlibs.korinject:korinject-jvm:${version("korinject")}") { setKDep(it) }

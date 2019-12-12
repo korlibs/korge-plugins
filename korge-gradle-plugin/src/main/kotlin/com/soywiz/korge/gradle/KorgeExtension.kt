@@ -171,9 +171,9 @@ class KorgeExtension(val project: Project) {
 
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
-	fun supportExperimental3d() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-3d:${BuildVersions.KORGE}")
-	}
+	// Already included in core
+	fun supportExperimental3d() = Unit
+	fun support3d() = Unit
 
 	fun supportSwf() {
 		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}")

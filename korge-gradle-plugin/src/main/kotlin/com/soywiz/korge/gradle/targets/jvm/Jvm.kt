@@ -49,7 +49,7 @@ fun Project.configureJvm() {
 				task.classpath =
 					mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
 
-				if (firstThread != false) {
+				if (firstThread == true) {
 					if (OS.isMac) {
 						task.jvmArgs("-XstartOnFirstThread")
 					}
