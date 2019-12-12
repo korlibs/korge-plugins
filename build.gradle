@@ -103,7 +103,7 @@ subprojects {
 			}
 
 			publications {
-				mavenJava(MavenPublication) {
+				maven(MavenPublication) {
 					pom {
 						name = project.name
 						description = project.property("project.description")
