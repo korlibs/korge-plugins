@@ -90,8 +90,17 @@ subprojects {
 
 	//println("project: ${project.name}")
 
-	if (publishUser != null && publishPassword != null) {
-		publishing {
+	task sourcesJar(type: Jar) {
+		archiveClassifier.set("sources")
+		from sourceSets.main.allSource
+	}
+
+	task javadocJar(type: Jar) {
+		archiveClassifier.set("javadoc")
+	}
+
+	publishing {
+		if (publishUser != null && publishPassword != null) {
 			repositories {
 				maven {
 					credentials {
@@ -101,22 +110,28 @@ subprojects {
 					url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
 				}
 			}
+		}
+		publications {
+			maven(MavenPublication) {
+				groupId = project.group
+				artifactId = project.name
+				version = project.version
+				from components.java
+				artifact(sourcesJar)
+				artifact(javadocJar)
 
-			publications {
-				maven(MavenPublication) {
-					pom {
-						name = project.name
-						description = project.property("project.description")
+				pom {
+					name = project.name
+					description = project.property("project.description")
+					url = project.property("project.scm.url")
+					licenses {
+						license {
+							name = project.property("project.license.name")
+							url = project.property("project.license.url")
+						}
+					}
+					scm {
 						url = project.property("project.scm.url")
-						licenses {
-							license {
-								name = project.property("project.license.name")
-								url = project.property("project.license.url")
-							}
-						}
-						scm {
-							url = project.property("project.scm.url")
-						}
 					}
 				}
 			}
