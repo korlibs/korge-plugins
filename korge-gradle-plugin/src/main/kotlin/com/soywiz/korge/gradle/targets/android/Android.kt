@@ -66,7 +66,7 @@ fun Project.configureNativeAndroid() {
 				//		}
 				//		allprojects {
 				//			repositories {
-				//				mavenLocal(); maven { url = "https://dl.bintray.com/soywiz/soywiz" }; google(); jcenter()
+				//				mavenLocal(); maven { url = "https://dl.bintray.com/korlibs/korlibs" }; google(); jcenter()
 				//			}
 				//		}
 				//		task clean(type: Delete) { delete rootProject.buildDir }
