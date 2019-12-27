@@ -124,8 +124,8 @@ class KorgeGradleApply(val project: Project) {
 		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
 
 
-		//println("com.soywiz:korge:$korgeVersion")
-		//project.dependencies.add("commonMainImplementation", "com.soywiz:korge:$korgeVersion")
+		//println("com.soywiz.korlibs.korge:korge:$korgeVersion")
+		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge:korge:$korgeVersion")
 
 		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
 		//}

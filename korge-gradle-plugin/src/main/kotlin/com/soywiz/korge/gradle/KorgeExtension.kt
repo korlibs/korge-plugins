@@ -326,7 +326,7 @@ class KorgeExtension(val project: Project) {
 
 }
 
-// println(project.resolveArtifacts("com.soywiz:korge-metadata:1.0.0"))
+// println(project.resolveArtifacts("com.soywiz.korlibs.korge:korge-metadata:1.0.0"))
 fun Project.resolveArtifacts(vararg artifacts: String): Set<File> {
     val config = project.configurations.detachedConfiguration(
         *artifacts.map {
