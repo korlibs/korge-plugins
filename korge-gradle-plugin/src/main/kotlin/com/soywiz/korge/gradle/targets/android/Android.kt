@@ -283,7 +283,7 @@ fun Project.configureNativeAndroid() {
 				group = GROUP_KORGE_RUN
 				dependsOn(installAndroidTask)
 				doFirst {
-					exec {
+					execLogger {
 						it.commandLine(
 							"$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
 							"${korge.id}/${korge.id}.MainActivity"

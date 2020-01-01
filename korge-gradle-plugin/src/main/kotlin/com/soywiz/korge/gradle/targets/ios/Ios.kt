@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 
 fun Project.configureNativeIos() {
-	tasks.create("prepareKotlinNativeBootstrapIos") { task ->
+	val prepareKotlinNativeBootstrapIos = tasks.create("prepareKotlinNativeBootstrapIos") { task ->
 		task.apply {
 			doLast {
 				File(buildDir, "platforms/native-ios/info.kt").delete() // Delete old versions
@@ -62,6 +62,7 @@ fun Project.configureNativeIos() {
 							}
 						}
 						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+							compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIos)
 							compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNativeIosProject")
 						}
 					}
@@ -75,12 +76,12 @@ fun Project.configureNativeIos() {
 			onlyIf { !File("/usr/local/bin/xcodegen").exists() }
 			doLast {
 				val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
-				exec {
+				execLogger {
 					it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")
 					it.workingDir(korlibsFolder)
 
 				}
-				exec {
+				execLogger {
 					it.commandLine("make")
 					it.workingDir(korlibsFolder["XcodeGen"])
 				}
@@ -730,25 +731,27 @@ fun Project.configureNativeIos() {
 				}
 			}.replace("\t", "  "))
 
-			exec {
+			execLogger {
 				it.workingDir(folder)
 				it.commandLine("xcodegen")
 			}
 		}
 	}
 
-	tasks.create("iosShutdownSimulator", Exec::class.java) { task ->
-		task.commandLine("xcrun", "simctl", "shutdown", "booted")
+	tasks.create("iosShutdownSimulator", Task::class.java) { task ->
+		task.doFirst {
+			execLogger { it.commandLine("xcrun", "simctl", "shutdown", "booted") }
+		}
 	}
 
-	tasks.create("iosCreateIphone7", Exec::class.java) { task ->
+	tasks.create("iosCreateIphone7", Task::class.java) { task ->
 		task.onlyIf { appleGetDevices().none { it.name == "iPhone 7" } }
 		task.doFirst {
             val result = execOutput("xcrun", "simctl", "list")
             val regex = Regex("com\\.apple\\.CoreSimulator\\.SimRuntime\\.iOS[\\w\\-]+")
             val simRuntime = regex.find(result)?.value ?: error("Can't find SimRuntime. exec: xcrun simctl list")
             println("simRuntime: $simRuntime")
-			task.commandLine("xcrun", "simctl", "create", "iPhone 7", "com.apple.CoreSimulator.SimDeviceType.iPhone-7", simRuntime)
+			execLogger { it.commandLine("xcrun", "simctl", "create", "iPhone 7", "com.apple.CoreSimulator.SimDeviceType.iPhone-7", simRuntime) }
 		}
 	}
 
@@ -757,8 +760,8 @@ fun Project.configureNativeIos() {
 		task.dependsOn("iosCreateIphone7")
 		task.doLast {
 			val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
-			exec { it.commandLine("xcrun", "simctl", "boot", udid) }
-			exec { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
+			execLogger { it.commandLine("xcrun", "simctl", "boot", udid) }
+			execLogger { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
 		}
 	}
 
@@ -779,7 +782,7 @@ fun Project.configureNativeIos() {
 					task.outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
 				}
 				task.doLast {
-					exec {
+					execLogger {
 						it.workingDir(xcodeProjDir)
 						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
 					}
@@ -787,25 +790,25 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("installIosSimulator$debugSuffix", Exec::class.java) { task ->
+		tasks.create("installIosSimulator$debugSuffix", Task::class.java) { task ->
 			val buildTaskName = "iosBuildSimulator$debugSuffix"
 			task.group = GROUP_KORGE_INSTALL
 
 			task.dependsOn(buildTaskName, "iosBootSimulator")
-			task.doFirst {
+			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
 				val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
-				task.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath)
+				execLogger { it.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath) }
 			}
 		}
 
-		tasks.create("installIosDevice$debugSuffix", Exec::class.java) { task ->
+		tasks.create("installIosDevice$debugSuffix", Task::class.java) { task ->
 			task.group = GROUP_KORGE_INSTALL
 			val buildTaskName = "iosBuildDevice$debugSuffix"
 			task.dependsOn("installIosDeploy", buildTaskName)
-			task.doFirst {
+			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				task.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--bundle", appFolder)
+				execLogger { it.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--bundle", appFolder) }
 			}
 		}
 
@@ -822,15 +825,23 @@ fun Project.configureNativeIos() {
 
 
 	tasks.create("iosEraseAllSimulators") { task ->
-		task.doLast { exec { it.commandLine("osascript", "-e", "tell application \"iOS Simulator\" to quit") } }
-		task.doLast { exec { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
-		task.doLast { exec { it.commandLine("xcrun", "simctl", "erase", "all") } }
+		task.doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"iOS Simulator\" to quit") } }
+		task.doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
+		task.doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }
 	}
 
+	tasks.create("fixIosDeploy", Task::class.java) { task ->
+		task.doLast {
+			println("https://github.com/ios-control/ios-deploy/issues/387#issuecomment-539366142")
+			println("In order to fix ld: framework not found MobileDevice error on Macos Catalina, execute:")
+			println("\\rm -fr ~/Library/Developer/Xcode/DerivedData/ios-deploy-*")
+			println("npm -g uninstall ios-deploy")
+		}
+	}
 
 	tasks.create("installIosDeploy", NpmTask::class.java) { task ->
 		task.onlyIf { !node_modules["ios-deploy"].exists() }
-		task.setArgs(listOf("install", "--unsafe-perm=true", "ios-deploy@1.9.4"))
+		task.setArgs(listOf("install", "--unsafe-perm=true", "ios-deploy@1.10.0"))
 	}
 
 }
@@ -857,7 +868,7 @@ fun Project.appleFindIphoneOsSdk(): String = appleFindSdk("iphoneos")
 //	dependsOn("iosInstallSimulator")
 //	doLast {
 //		val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
-//		exec { commandLine("xcrun", "simctl", "launch", "-w", udid, korge.id) }
+//		execLogger { commandLine("xcrun", "simctl", "launch", "-w", udid, korge.id) }
 //
 //	}
 //}

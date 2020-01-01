@@ -54,10 +54,15 @@ fun Project.configureNativeDesktop() {
 		})
 	}
 
+	//project.afterEvaluate {}
+
+	// Create a dummy file straight away to prevent issues with K/N
+	val nativeDesktopBootstrapFile = File(buildDir, "platforms/native-desktop/bootstrap.kt")
+	//nativeDesktopBootstrapFile.also { it.parentFile.mkdirs() }.writeText("/*empty*/")
 
 	val prepareKotlinNativeBootstrap = tasks.create("prepareKotlinNativeBootstrap") { task ->
 		task.apply {
-			val output = File(buildDir, "platforms/native-desktop/bootstrap.kt")
+			val output = nativeDesktopBootstrapFile
 			outputs.file(output)
 			doLast {
 				output.parentFile.mkdirs()
@@ -89,7 +94,7 @@ fun Project.configureNativeDesktop() {
 			//println("TARGET: $target")
 			//println(this.binariesTaskName)
 			for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-				mainCompilation.getLinkTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
+				mainCompilation.getCompileTask(NativeOutputKind.EXECUTABLE, type, project).dependsOn(prepareKotlinNativeBootstrap)
 			}
 			//println("File(buildDir, \"platforms/native-desktop\"): ${File(buildDir, "platforms/native-desktop")}")
 
