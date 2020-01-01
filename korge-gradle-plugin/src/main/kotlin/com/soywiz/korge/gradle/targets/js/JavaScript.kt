@@ -221,14 +221,29 @@ private fun Project.addWeb() {
                 }
             }
 
-            val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
+			val indexHtmlTemplateFile = "index.v2.template.html"
+			val requireMinJsTemplateFile = "require.min.v2.template.js"
+			val indexTemplateHtml = when {
+				task.targetDir[indexHtmlTemplateFile].exists() -> task.targetDir[indexHtmlTemplateFile].readText()
+				else -> getResourceBytes(indexHtmlTemplateFile).toString(Charsets.UTF_8)
+			}
+			// If a custom version of require.min.js
+			val requireMinTemplateJs = when {
+				task.targetDir[requireMinJsTemplateFile].exists() -> task.targetDir[requireMinJsTemplateFile].readText()
+				else -> getResourceBytes(requireMinJsTemplateFile).toString(Charsets.UTF_8)
+			}
+
+			val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
             task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
             task.targetDir["index.html"].writeText(
-                SimpleTemplateEngine().createTemplate(task.targetDir["index.template.html"].readText()).make(mapOf(
+                SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(mapOf(
                     "OUTPUT" to project.name,
                     "TITLE" to korge.name
                 )).toString())
 
+			task.targetDir["require.min.js"].writeText(requireMinTemplateJs)
+			task.targetDir["favicon.png"].writeBytes(korge.getIconBytes(16))
+			task.targetDir["appicon.png"].writeBytes(korge.getIconBytes(180)) // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
         }
 	}
 

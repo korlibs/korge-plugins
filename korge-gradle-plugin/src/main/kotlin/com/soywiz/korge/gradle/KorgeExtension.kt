@@ -75,7 +75,6 @@ fun String.replaceGroovy(replacements: Map<String, Any?>): String {
 }
 
 data class MavenLocation(val group: String, val name: String, val version: String, val classifier: String? = null) {
-
 	val versionWithClassifier by lazy { buildString {
 		append(version)
 		if (classifier != null) {

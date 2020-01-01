@@ -17,9 +17,11 @@ fun tryGetResourceBytes(path: String): ByteArray? {
 fun getResourceBytes(path: String): ByteArray = tryGetResourceBytes(path) ?: error("Can't find resource '$path'")
 fun getResourceString(path: String): String = getResourceBytes(path).toString(UTF8)
 
+fun KorgeExtension.iconExists() = icon != null && icon!!.exists()
+
 fun KorgeExtension.getIconBytes(): ByteArray {
 	return when {
-		icon?.exists() == true -> icon!!.readBytes()
+		iconExists() -> icon!!.readBytes()
 		else -> getResourceBytes("/icons/korge.png")
 	}
 }
