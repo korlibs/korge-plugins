@@ -218,6 +218,9 @@ fun Project.configureNativeAndroid() {
 								line("</activity>")
 							}
 							line("</application>")
+							for (text in korge.androidManifestChunks) {
+								line(text)
+							}
 						}
 						line("</manifest>")
 					}.toString())

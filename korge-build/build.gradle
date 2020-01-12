@@ -11,7 +11,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 Properties gradleProperties = new Properties()
-gradleProperties.load(new StringReader(new File(rootDir, "../gradle.properties").text))
+gradleProperties.load(new StringReader(new File(projectDir, "../gradle.properties").text))
 ext.gradleProperties = gradleProperties
 
 def version(String name) {

@@ -162,6 +162,7 @@ class KorgeExtension(val project: Project) {
 
 	val plugins = KorgePluginsContainer(project)
 	val androidManifestApplicationChunks = LinkedHashSet<String>()
+	val androidManifestChunks = LinkedHashSet<String>()
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
 		dependencyMulti(name, registerPlugin = false)
@@ -179,8 +180,12 @@ class KorgeExtension(val project: Project) {
 		androidManifestApplicationChunks += text
 	}
 
+	fun androidManifestChunk(text: String) {
+		androidManifestChunks += text
+	}
+
 	fun androidPermission(name: String) {
-		androidManifestApplicationChunk("""<uses-permission android:name="$name" />""")
+		androidManifestChunk("""<uses-permission android:name="$name" />""")
 	}
 
 	fun supportVibration() {
