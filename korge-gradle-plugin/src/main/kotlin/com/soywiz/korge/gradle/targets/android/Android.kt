@@ -202,6 +202,9 @@ fun Project.configureNativeAndroid() {
 								for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidManifestApplication() }) {
 									line(text)
 								}
+								for (text in korge.androidManifestApplicationChunks) {
+									line(text)
+								}
 
 								line("<activity android:name=\".MainActivity\">")
 								indent {

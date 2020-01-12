@@ -6,7 +6,6 @@ import com.soywiz.kds.*
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.plugin.*
-import com.soywiz.korio.util.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
@@ -162,6 +161,7 @@ class KorgeExtension(val project: Project) {
 	}
 
 	val plugins = KorgePluginsContainer(project)
+	val androidManifestApplicationChunks = LinkedHashSet<String>()
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
 		dependencyMulti(name, registerPlugin = false)
@@ -173,6 +173,19 @@ class KorgeExtension(val project: Project) {
 	// Already included in core
 	fun supportExperimental3d() = Unit
 	fun support3d() = Unit
+
+	//<uses-permission android:name="android.permission.VIBRATE" />
+	fun androidManifestApplicationChunk(text: String) {
+		androidManifestApplicationChunks += text
+	}
+
+	fun androidPermission(name: String) {
+		androidManifestApplicationChunk("""<uses-permission android:name="$name" />""")
+	}
+
+	fun supportVibration() {
+		androidPermission("android.permission.VIBRATE")
+	}
 
 	fun supportSwf() {
 		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}")
