@@ -136,6 +136,8 @@ class KorgeExtension(val project: Project) {
 
 	var entryPoint: String = "main"
 	var jvmMainClassName: String = "MainKt"
+	//var proguardObfuscate: Boolean = false
+	var proguardObfuscate: Boolean = true
 
 	var androidMinSdk: String? = null
 	internal var _androidAppendBuildGradle: String? = null

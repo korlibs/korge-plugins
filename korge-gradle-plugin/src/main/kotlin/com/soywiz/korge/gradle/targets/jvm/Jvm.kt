@@ -108,12 +108,19 @@ private fun Project.addProguard() {
 		task.group = GROUP_KORGE_PACKAGE
 		project.afterEvaluate {
 			task.libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
+			// Support newer java versions that doesn't have rt.jar
+			task.libraryjars(project.fileTree("${System.getProperty("java.home")}/jmods/") {
+				it.include("**/java.*.jmod")
+			})
 			//println(packageJvmFatJar.outputs.files.toList())
 			task.injars(packageJvmFatJar.outputs.files.toList())
 			task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
+
 			task.dontwarn()
 			task.ignorewarnings()
-			//task.dontobfuscate()
+			if (!project.korge.proguardObfuscate) {
+				task.dontobfuscate()
+			}
 			task.assumenosideeffects("""
                 class kotlin.jvm.internal.Intrinsics {
                     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
@@ -125,6 +132,10 @@ private fun Project.addProguard() {
 
 			task.keep("class com.jogamp.** { *; }")
 			task.keep("class jogamp.** { *; }")
+			task.keep("class com.sun.jna.** { *; }")
+			task.keep("class ${project.korge.jvmMainClassName} { *; }")
+			task.keep("class * extends com.soywiz.korau.format.AudioFormat { *; }")
+			task.keep("class * implements com.sun.jna.Library { *; }")
 
 			if (runJvm.main?.isNotBlank() == true) {
 				task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
