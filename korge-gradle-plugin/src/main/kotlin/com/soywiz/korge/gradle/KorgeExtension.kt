@@ -128,9 +128,8 @@ class KorgeExtension(val project: Project) {
 
 	var backgroundColor: Int = 0xff000000.toInt()
 
-	var webBindAddress = "0.0.0.0"
-	var webBindPort = 0
-	//var webBindPort = 8080
+	var webBindAddress = project.findProperty("web.bind.address")?.toString() ?: "0.0.0.0"
+	var webBindPort = project.findProperty("web.bind.port")?.toString()?.toIntOrNull() ?: 0
 
 	var appleDevelopmentTeamId: String? = java.lang.System.getenv("DEVELOPMENT_TEAM")
 		?: java.lang.System.getProperty("appleDevelopmentTeamId")?.toString()
