@@ -6,32 +6,50 @@ import com.sun.net.httpserver.*
 import org.gradle.api.Project
 import java.io.*
 import java.net.*
+import java.nio.charset.*
 import java.nio.file.*
+import java.util.concurrent.atomic.*
 import kotlin.math.min
 
-fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0, callback: (server: HttpServer) -> Unit) {
-	val absFolder = folder.absoluteFile
-	val server = HttpServer.create(InetSocketAddress(address, port), 0)
-	println("Listening at http://$address:${server.address.port}/")
-	server.createContext("/") { t ->
-		val requested = File(folder, t.requestURI.path).absoluteFile
+class DecoratedHttpServer(val server: HttpServer) {
+	val port get() = server.address.port
+	var updateVersion = AtomicInteger(0)
+}
 
-		if (requested.absolutePath.startsWith(absFolder.absolutePath)) {
-			val req = if (requested.exists() && requested.isDirectory) requested["index.html"] else requested
-			when {
-				req.exists() && !req.isDirectory -> t.respond(FileContent(req))
-				else -> t.respond(ByteArrayContent("<h1>404 - Not Found</h1>".toByteArray(Charsets.UTF_8), "text/html"), code = 404)
-			}
-		} else {
-			t.respond(ByteArrayContent("<h1>500 - Internal Server Error</h1>".toByteArray(Charsets.UTF_8), "text/html"), code = 500)
-		}
-	}
-	server.start()
+fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0, callback: (server: DecoratedHttpServer) -> Unit) {
+	val server = staticHttpServer(folder, address, port)
 	try {
 		callback(server)
 	} finally {
-		server.stop(0)
+		server.server.stop(0)
 	}
+}
+
+fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0): DecoratedHttpServer {
+	val absFolder = folder.absoluteFile
+	val server = HttpServer.create(InetSocketAddress(address, port), 0)
+	val decorated = DecoratedHttpServer(server)
+	println("Listening at http://$address:${server.address.port}/")
+	server.createContext("/") { t ->
+		//println("t.requestURI.path=${t.requestURI.path}")
+		if (t.requestURI.path == "/__version") {
+			t.respond(TextContent("${decorated.updateVersion.get()}"))
+		} else {
+			val requested = File(folder, t.requestURI.path).absoluteFile
+
+			if (requested.absolutePath.startsWith(absFolder.absolutePath)) {
+				val req = if (requested.exists() && requested.isDirectory) requested["index.html"] else requested
+				when {
+					req.exists() && !req.isDirectory -> t.respond(FileContent(req))
+					else -> t.respond(TextContent("<h1>404 - Not Found</h1>", contentType = "text/html"), code = 404)
+				}
+			} else {
+				t.respond(TextContent("<h1>500 - Internal Server Error</h1>", contentType = "text/html"), code = 500)
+			}
+		}
+	}
+	server.start()
+	return decorated
 }
 
 interface RangedContent {
@@ -63,7 +81,9 @@ class FileContent(val file: File) : RangedContent {
 	}
 }
 
-class ByteArrayContent(val data: ByteArray, override val contentType: String) : RangedContent {
+open class TextContent(val text: String, override val contentType: String = "text/plain", val charset: Charset = Charsets.UTF_8) : ByteArrayContent(text.toByteArray(charset), contentType)
+
+open class ByteArrayContent(val data: ByteArray, override val contentType: String) : RangedContent {
 	override val length: Long get() = data.size.toLong()
 
 	override fun write(out: OutputStream, range: LongRange) {

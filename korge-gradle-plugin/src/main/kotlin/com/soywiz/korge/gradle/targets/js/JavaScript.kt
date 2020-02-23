@@ -31,6 +31,8 @@ fun Project.nodeExec(vararg args: Any, workingDir: File? = null): ExecResult = N
 	arguments = args.toList()
 }.execute()
 
+internal var _webServer: DecoratedHttpServer? = null
+
 fun Project.configureJavaScript() {
 	plugins.apply("kotlin-dce-js")
 
@@ -263,7 +265,7 @@ private fun Project.addWeb() {
 			val address = korge.webBindAddress
 			val port = korge.webBindPort
 			staticHttpServer(project.buildDir["web"], address = address, port = port) { server ->
-				openBrowser("http://$address:${server.address.port}/index.html")
+				openBrowser("http://$address:${server.port}/index.html")
 				while (true) {
 					Thread.sleep(1000L)
 				}
@@ -271,9 +273,29 @@ private fun Project.addWeb() {
 		}
 	}
 
+	val jsWebRunNonBlocking = project.tasks.create<Task>("jsWebRunNonBlocking") {
+		dependsOn(jsWeb)
+		doLast {
+			if (_webServer == null) {
+				val address = korge.webBindAddress
+				val port = korge.webBindPort
+				val server = staticHttpServer(project.buildDir["web"], address = address, port = port)
+				_webServer = server
+				openBrowser("http://$address:${server.port}/index.html")
+				project.exec {  }
+			}
+			_webServer?.updateVersion?.incrementAndGet()
+		}
+	}
+
 	val runJs = project.tasks.create<Task>("runJs") {
 		group = GROUP_KORGE_RUN
 		dependsOn(jsWebRun)
+	}
+
+	val runJsNonBlocking = project.tasks.create<Task>("runJsNonBlocking") {
+		group = GROUP_KORGE_RUN
+		dependsOn(jsWebRunNonBlocking)
 	}
 
 	val jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf(
