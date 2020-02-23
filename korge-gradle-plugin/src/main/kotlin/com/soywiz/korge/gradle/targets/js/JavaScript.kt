@@ -8,6 +8,7 @@ import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import groovy.text.*
+import org.gradle.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.repositories.*
 import org.gradle.api.file.*
@@ -16,6 +17,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
+import java.lang.management.*
 
 val Project.node_modules get() = korgeCacheDir["node_modules"]
 val Project.webMinFolder get() = buildDir["web-min"]
@@ -259,33 +261,58 @@ private fun Project.addWeb() {
 		configureJsWeb(task, minimized = true)
 	}
 
+	val jsStopWeb = project.addTask<Task>(name = "jsStopWeb") { task ->
+		task.doLast {
+			println("jsStopWeb: ${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}")
+			_webServer?.server?.stop(0)
+			_webServer = null
+		}
+	}
+
+	fun runServer(blocking: Boolean) {
+		if (_webServer == null) {
+			val address = korge.webBindAddress
+			val port = korge.webBindPort
+			val server = staticHttpServer(project.buildDir["web"], address = address, port = port)
+			_webServer = server
+			try {
+				openBrowser("http://$address:${server.port}/index.html")
+				if (blocking) {
+					while (true) {
+						Thread.sleep(1000L)
+					}
+				}
+			} finally {
+				if (blocking) {
+					server.server.stop(0)
+					_webServer = null
+				}
+			}
+		}
+		_webServer?.updateVersion?.incrementAndGet()
+	}
+
 	val jsWebRun = project.tasks.create<Task>("jsWebRun") {
 		dependsOn(jsWeb)
 		doLast {
-			val address = korge.webBindAddress
-			val port = korge.webBindPort
-			staticHttpServer(project.buildDir["web"], address = address, port = port) { server ->
-				openBrowser("http://$address:${server.port}/index.html")
-				while (true) {
-					Thread.sleep(1000L)
-				}
-			}
+			runServer(!project.gradle.startParameter.isContinuous)
 		}
 	}
 
 	val jsWebRunNonBlocking = project.tasks.create<Task>("jsWebRunNonBlocking") {
 		dependsOn(jsWeb)
 		doLast {
-			if (_webServer == null) {
-				val address = korge.webBindAddress
-				val port = korge.webBindPort
-				val server = staticHttpServer(project.buildDir["web"], address = address, port = port)
-				_webServer = server
-				openBrowser("http://$address:${server.port}/index.html")
-				project.exec {  }
-			}
-			_webServer?.updateVersion?.incrementAndGet()
+			runServer(false)
 		}
+	}
+
+	project.gradle.addBuildListener(object : BuildAdapter() {
+	})
+	// In continuous mode this is executed everytime. We need to detect the "Build cancelled." event.
+	project.gradle.buildFinished {
+		//println("project.gradle.buildFinished!!")
+		//_webServer?.server?.stop(0)
+		//_webServer = null
 	}
 
 	val runJs = project.tasks.create<Task>("runJs") {

@@ -5,6 +5,7 @@ import com.soywiz.korge.gradle.util.get
 import com.sun.net.httpserver.*
 import org.gradle.api.Project
 import java.io.*
+import java.lang.management.*
 import java.net.*
 import java.nio.charset.*
 import java.nio.file.*
@@ -29,7 +30,7 @@ fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0)
 	val absFolder = folder.absoluteFile
 	val server = HttpServer.create(InetSocketAddress(address, port), 0)
 	val decorated = DecoratedHttpServer(server)
-	println("Listening at http://$address:${server.address.port}/")
+	println("Listening (${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}) at http://$address:${server.address.port}/")
 	server.createContext("/") { t ->
 		//println("t.requestURI.path=${t.requestURI.path}")
 		if (t.requestURI.path == "/__version") {
