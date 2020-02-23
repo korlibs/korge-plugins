@@ -260,8 +260,10 @@ private fun Project.addWeb() {
 	val jsWebRun = project.tasks.create<Task>("jsWebRun") {
 		dependsOn(jsWeb)
 		doLast {
-			staticHttpServer(project.buildDir["web"]) { server ->
-				openBrowser("http://127.0.0.1:${server.address.port}/index.html")
+			val address = korge.webBindAddress
+			val port = korge.webBindPort
+			staticHttpServer(project.buildDir["web"], address = address, port = port) { server ->
+				openBrowser("http://$address:${server.address.port}/index.html")
 				while (true) {
 					Thread.sleep(1000L)
 				}

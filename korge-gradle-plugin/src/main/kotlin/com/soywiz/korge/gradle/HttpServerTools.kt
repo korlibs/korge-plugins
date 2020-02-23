@@ -9,10 +9,10 @@ import java.net.*
 import java.nio.file.*
 import kotlin.math.min
 
-fun staticHttpServer(folder: File, port: Int = 0, callback: (server: HttpServer) -> Unit) {
+fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0, callback: (server: HttpServer) -> Unit) {
 	val absFolder = folder.absoluteFile
-	val server = HttpServer.create(InetSocketAddress("127.0.0.1", port), 0)
-	println("Listening at http://127.0.0.1:${server.address.port}/")
+	val server = HttpServer.create(InetSocketAddress(address, port), 0)
+	println("Listening at http://$address:${server.address.port}/")
 	server.createContext("/") { t ->
 		val requested = File(folder, t.requestURI.path).absoluteFile
 
