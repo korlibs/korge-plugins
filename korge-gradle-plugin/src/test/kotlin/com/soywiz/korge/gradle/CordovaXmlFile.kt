@@ -4,6 +4,7 @@ import org.junit.Test
 import kotlin.test.*
 
 class CordovaXmlFile {
+	/*
     val sampleXml = """
 		<?xml version='1.0' encoding='utf-8'?>
 		<widget id="com.soywiz.sample1" version="1.0.0" xmlns="http://www.w3.org/ns/widgets">
@@ -67,5 +68,6 @@ class CordovaXmlFile {
 		""".trimIndent().trimEnd(), extension.updateCordovaXmlString(sampleXml).trimEnd()
         )
     }
+	 */
 }
 

@@ -10,10 +10,11 @@ import com.soywiz.korio.serialization.json.*
 import kotlin.test.*
 
 class LipsyncResourceProcessorTest {
+	/*
 	@Ignore
 	@Test
 	fun test1() = suspendTest {
-		LipsyncResourceProcessor.processAudioData(ResourcesVfs["simple.wav"].readAudioData())
+		//LipsyncResourceProcessor.processAudioData(ResourcesVfs["simple.wav"].readAudioData())
 	}
 
 	@Test
@@ -83,4 +84,5 @@ class LipsyncResourceProcessorTest {
 		val processed2 = SwfResourceProcessor.process(ResourcesVfs["shapes.swf"], memoryVfs)
 		assertEquals(false, processed2)
 	}
+	 */
 }
