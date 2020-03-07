@@ -26,7 +26,7 @@ object KorgeBuildService {
 					val processor = group.tryGetProcessorByName(srcFile.name)
 					if (processor != null) {
 						logger("$processor: srcFile=$srcFile -> dstDirectory=$dstDirectory...")
-						runBlocking {
+						runBlocking2 {
 							try {
 								runCatching { dstDirectory.mkdirs() }
 

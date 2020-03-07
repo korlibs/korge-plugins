@@ -198,33 +198,33 @@ class KorgeExtension(val project: Project) {
 	}
 
 	fun supportSwf() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-swf:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
     fun supportShape() {
-        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}")
+        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
     }
 
     fun supportShapeOps() = supportShape()
 	fun supportTriangulation() = supportShape()
 
 	fun supportDragonbones() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-dragonbones:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun supportBox2d() {
-		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}")
+		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
 	fun supportMp3() = Unit
 	fun supportOggVorbis() = Unit
 
 	fun supportQr() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-qr:${BuildVersions.KORIM}")
+		dependencyMulti("com.soywiz.korlibs.korim:korim-qr:${BuildVersions.KORIM}", registerPlugin = false)
 	}
 
 	fun supportJpeg() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-jpeg:${BuildVersions.KORIM}")
+		dependencyMulti("com.soywiz.korlibs.korim:korim-jpeg:${BuildVersions.KORIM}", registerPlugin = false)
 	}
 
 	fun admob(ADMOB_APP_ID: String) {
@@ -270,35 +270,8 @@ class KorgeExtension(val project: Project) {
 
 	@JvmOverloads
 	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {
-		dependencies {
-            /*
-			loop@for (target in targets) {
-				if (!OS.isMac){
-					when (target) {
-						"iosArm64", "iosArm32", "iosX64", "macosX64" -> continue@loop
-					}
-				}
-				if (!OS.isLinux){
-					when (target) {
-						"linuxX64" -> continue@loop
-					}
-				}
-
-				val base = when (target) {
-					"metadata" -> "common"
-					else -> target
-				}
-				val suffix = when {
-					target == "android" && androidIsJvm -> "-jvm"
-					target == "metadata" && suffixCommonRename -> "-common"
-					else -> "-${target.toLowerCase()}"
-				}
-
-				val packed = "$group:$name$suffix:$version"
-				add("${base}MainApi", packed)
-				add("${base}TestImplementation", packed)
-			}
-             */
+		project.dependencies {
+			//println("dependencyMulti --> $group:$name:$version")
             add("commonMainApi", "$group:$name:$version")
 		}
         Unit

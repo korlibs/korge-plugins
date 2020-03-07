@@ -2,15 +2,15 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-	const val KLOCK = "1.8.5"
-	const val KDS = "1.9.3"
-	const val KMEM = "1.9.1"
-	const val KORMA = "1.9.1"
-	const val KORIO = "1.9.8"
-	const val KORIM = "1.9.8"
-	const val KORAU = "1.9.11"
-	const val KORGW = "1.9.12"
-	const val KORGE = "1.5.7"
-	const val KOTLIN = "1.3.61"
-	const val COROUTINES = "1.3.3"
+	const val KLOCK = "1.10.0"
+	const val KDS = "1.10.0"
+	const val KMEM = "1.10.0"
+	const val KORMA = "1.10.1"
+	const val KORIO = "1.10.0"
+	const val KORIM = "1.10.0"
+	const val KORAU = "1.10.0"
+	const val KORGW = "1.10.0"
+	const val KORGE = "1.10.0"
+	const val KOTLIN = "1.3.70"
+	const val COROUTINES = "1.3.4"
 }
