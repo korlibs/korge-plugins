@@ -114,6 +114,8 @@ class KorgeExtension(val project: Project) {
 
 	var copyright: String = "Copyright (c) 2019 Unknown"
 
+	var supressWarnings: Boolean = false
+
 	var authorName = "unknown"
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"

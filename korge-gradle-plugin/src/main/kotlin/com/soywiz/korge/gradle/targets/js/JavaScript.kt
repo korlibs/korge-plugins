@@ -38,21 +38,28 @@ internal var _webServer: DecoratedHttpServer? = null
 fun Project.configureJavaScript() {
 	plugins.apply("kotlin-dce-js")
 
-	gkotlin.targets.add((gkotlin.presets.getAt("js") as KotlinJsTargetPreset).createTarget("js").apply {
-		//attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
-		compilations.getAt("main").apply {
-			for (task in listOf("compileKotlinJs", "compileTestKotlinJs")) {
-				(project[task] as Kotlin2JsCompile).apply {
-					kotlinOptions.apply {
-						languageVersion = "1.3"
-						sourceMap = true
-						metaInfo = true
-						moduleKind = "umd"
+	gkotlin.apply {
+		js {
+			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
+			compilations.all {
+				it.kotlinOptions.apply {
+					languageVersion = "1.3"
+					sourceMap = true
+					metaInfo = true
+					moduleKind = "umd"
+					suppressWarnings = korge.supressWarnings
+				}
+			}
+
+			browser {
+				testTask {
+					useKarma {
+						useChromeHeadless()
 					}
 				}
 			}
 		}
-	})
+	}
 
 	project.dependencies.add("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
 	project.dependencies.add("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
