@@ -4,13 +4,10 @@ plugins {
 	kotlin("jvm")
 	maven
 	`maven-publish`
+	id("com.gradle.plugin-publish")
 }
 
-//apply(plugin = "kotlin-platform-jvm")
-//apply(plugin = "kotlin")
-apply(plugin = "com.gradle.plugin-publish")
-
-extensions.getByType(com.gradle.publish.PluginBundleExtension::class.java).apply {
+pluginBundle {
 	website = "https://korge.soywiz.com/"
 	vcsUrl = "https://github.com/korlibs/korge-plugins"
 	tags = listOf("korge", "game", "engine", "game engine", "multiplatform", "kotlin")

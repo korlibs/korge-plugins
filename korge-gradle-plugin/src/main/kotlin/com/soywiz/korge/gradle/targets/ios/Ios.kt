@@ -744,22 +744,24 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("iosCreateIphone7", Task::class.java) { task ->
-		task.onlyIf { appleGetDevices().none { it.name == "iPhone 7" } }
+	val iphoneVersion = 8
+
+	val iosCreateIphone = tasks.create("iosCreateIphone", Task::class.java) { task ->
+		task.onlyIf { appleGetDevices().none { it.name == "iPhone $iphoneVersion" } }
 		task.doFirst {
             val result = execOutput("xcrun", "simctl", "list")
             val regex = Regex("com\\.apple\\.CoreSimulator\\.SimRuntime\\.iOS[\\w\\-]+")
             val simRuntime = regex.find(result)?.value ?: error("Can't find SimRuntime. exec: xcrun simctl list")
             println("simRuntime: $simRuntime")
-			execLogger { it.commandLine("xcrun", "simctl", "create", "iPhone 7", "com.apple.CoreSimulator.SimDeviceType.iPhone-7", simRuntime) }
+			execLogger { it.commandLine("xcrun", "simctl", "create", "iPhone $iphoneVersion", "com.apple.CoreSimulator.SimDeviceType.iPhone-$iphoneVersion", simRuntime) }
 		}
 	}
 
 	tasks.create("iosBootSimulator", Task::class.java) { task ->
 		task.onlyIf { appleGetBootedDevice() == null }
-		task.dependsOn("iosCreateIphone7")
+		task.dependsOn(iosCreateIphone)
 		task.doLast {
-			val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
+			val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
 			execLogger { it.commandLine("xcrun", "simctl", "boot", udid) }
 			execLogger { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
 		}
@@ -797,7 +799,7 @@ fun Project.configureNativeIos() {
 			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
+				val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
 				execLogger { it.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath) }
 			}
 		}
