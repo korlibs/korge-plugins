@@ -44,7 +44,8 @@ fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0)
 	val server = HttpServer.create(InetSocketAddress(address, port), 0)
 	val decorated = DecoratedHttpServer(server)
 
-	println("Listening (${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}):")
+	println("Listening... (${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}):")
+	println("Serving... file://$folder")
 	for (raddr in getIpListFromIp(address)) {
 		println("  at http://$raddr:${server.address.port}/")
 	}
