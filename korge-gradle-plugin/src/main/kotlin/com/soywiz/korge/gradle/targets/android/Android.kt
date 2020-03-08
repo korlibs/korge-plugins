@@ -88,7 +88,7 @@ fun Project.configureNativeAndroid() {
 					ensureParents().writeText(Indenter {
 						line("buildscript") {
 							line("repositories { google(); jcenter(); maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") } }")
-							line("dependencies { classpath 'com.android.tools.build:gradle:3.3.0'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
+							line("dependencies { classpath 'com.android.tools.build:gradle:$androidBuildGradleVersion'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
 						}
 						line("repositories") {
 							line("mavenLocal()")

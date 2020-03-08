@@ -13,4 +13,5 @@ object BuildVersions {
 	const val KORGE = "1.10.0"
 	const val KOTLIN = "1.3.70"
 	const val COROUTINES = "1.3.4"
+	const val ANDROID_BUILD = "3.6.0"
 }
