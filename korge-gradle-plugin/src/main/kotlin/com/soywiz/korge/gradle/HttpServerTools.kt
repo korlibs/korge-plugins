@@ -1,16 +1,16 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.util.get
+import com.soywiz.korge.gradle.util.*
 import com.sun.net.httpserver.*
-import org.gradle.api.Project
+import org.gradle.api.*
 import java.io.*
 import java.lang.management.*
 import java.net.*
 import java.nio.charset.*
 import java.nio.file.*
 import java.util.concurrent.atomic.*
-import kotlin.math.min
+import kotlin.math.*
 
 class DecoratedHttpServer(val server: HttpServer) {
 	val port get() = server.address.port
@@ -26,11 +26,28 @@ fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0,
 	}
 }
 
+fun getIpListFromIp(ip: String): List<String> = when (ip) {
+	"0.0.0.0" -> try {
+		NetworkInterface.getNetworkInterfaces().toList()
+			.flatMap { it.inetAddresses.toList() }
+			.filterIsInstance<Inet4Address>()
+			.map { it.hostAddress }
+	} catch (e: Throwable) {
+		e.printStackTrace()
+		listOf(ip)
+	}
+	else -> listOf(ip)
+}
+
 fun staticHttpServer(folder: File, address: String = "127.0.0.1", port: Int = 0): DecoratedHttpServer {
 	val absFolder = folder.absoluteFile
 	val server = HttpServer.create(InetSocketAddress(address, port), 0)
 	val decorated = DecoratedHttpServer(server)
-	println("Listening (${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}) at http://$address:${server.address.port}/")
+
+	println("Listening (${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}):")
+	for (raddr in getIpListFromIp(address)) {
+		println("  at http://$raddr:${server.address.port}/")
+	}
 	server.createContext("/") { t ->
 		//println("t.requestURI.path=${t.requestURI.path}")
 		if (t.requestURI.path == "/__version") {
