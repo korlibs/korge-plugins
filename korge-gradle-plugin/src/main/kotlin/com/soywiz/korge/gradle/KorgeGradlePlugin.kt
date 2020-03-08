@@ -34,7 +34,7 @@ val Project.korge: KorgeExtension
 	}
 
 open class JsWebCopy() : DefaultTask() {
-	@OutputFile
+	@OutputDirectory
 	open lateinit var targetDir: File
 }
 
