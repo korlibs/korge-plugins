@@ -196,8 +196,11 @@ private fun Project.addWeb() {
 
 		task.targetDir = project.buildDir[if (minimized) "web-min" else "web"]
 
-        val kotlinTargets by lazy {  project["kotlin"]["targets"] }
-        val jsCompilations by lazy {  kotlinTargets["js"]["compilations"] }
+        val kotlinTargets by lazy { project["kotlin"]["targets"] }
+        val jsCompilations by lazy { kotlinTargets["js"]["compilations"] }
+		val mainJsCompilation = (jsCompilations["main"] as KotlinJsCompilation)
+
+		val kotlinJsCompile = tasks.getByName("compileKotlinJs") as Kotlin2JsCompile
 
 
         //project.afterEvaluate {
@@ -210,7 +213,7 @@ private fun Project.addWeb() {
                     if (minimized) {
                         from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
                     }
-                    from((jsCompilations["main"] as KotlinCompilation<*>).output.allOutputs) { copy -> copy.configureWeb() }
+                    from(mainJsCompilation.output.allOutputs) { copy -> copy.configureWeb() }
                     from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
                     for (file in (jsCompilations["test"]["runtimeDependencyFiles"] as FileCollection).toList()) {
                         if (file.exists() && !file.isDirectory) {
@@ -248,7 +251,7 @@ private fun Project.addWeb() {
             task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
             task.targetDir["index.html"].writeText(
                 SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(mapOf(
-                    "OUTPUT" to project.name,
+                    "OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
                     "TITLE" to korge.name
                 )).toString())
 
