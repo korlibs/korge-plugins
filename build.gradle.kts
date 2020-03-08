@@ -1,6 +1,10 @@
+import java.net.*
+import java.util.*
+import java.io.*
+
 buildscript {
-	def kotlinVersion = project.properties["kotlinVersion"]?.toString() ?: ""
-	def isKotlinDev = kotlinVersion.contains("-release")
+	val kotlinVersion: String by project
+	val isKotlinDev = kotlinVersion.contains("-release")
 	repositories {
 		mavenLocal()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
@@ -16,12 +20,12 @@ buildscript {
 
 plugins {
 	id("com.moowork.node") version "1.3.1"
-	id 'com.gradle.plugin-publish' version '0.10.1' apply false
+	id("com.gradle.plugin-publish") version "0.10.1" apply false
 }
 
 
-def kotlinVersion = project.properties["kotlinVersion"]?.toString() ?: ""
-def isKotlinDev = kotlinVersion.contains("-release")
+val kotlinVersion: String by project
+val isKotlinDev = kotlinVersion.contains("-release")
 
 allprojects {
 	repositories {
@@ -52,12 +56,12 @@ allprojects {
 	}
 }
 
-def version(String name) {
-	return properties["${name}Version"]
+fun version(name: String): String? {
+	return properties["${name}Version"]?.toString()
 }
 
 //new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
-new File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt").text = ("""
+File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt").writeText("""
 package com.soywiz.korge.gradle
 
 object BuildVersions {
@@ -76,8 +80,8 @@ object BuildVersions {
 }
 """)
 
-def publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
-def publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
+val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
+val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
 
 subprojects {
 	repositories {
@@ -87,54 +91,57 @@ subprojects {
 		maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
 	}
 
-	apply plugin: "maven"
-	apply plugin: "maven-publish"
-    apply plugin: "kotlin"
+	apply(plugin = "maven")
+	apply(plugin = "maven-publish")
+    apply(plugin = "kotlin")
 
 	//println("project: ${project.name}")
 
-	task sourcesJar(type: Jar) {
+	val sourceSets: SourceSetContainer by project
+	val publishing: PublishingExtension by project
+
+	val sourcesJar by tasks.creating(Jar::class) {
 		archiveClassifier.set("sources")
-		from sourceSets.main.allSource
+		from(sourceSets["main"].allSource)
 	}
 
-	task javadocJar(type: Jar) {
+	val javadocJar by tasks.creating(Jar::class) {
 		archiveClassifier.set("javadoc")
 	}
 
-	publishing {
+	publishing.apply {
 		if (publishUser != null && publishPassword != null) {
 			repositories {
 				maven {
 					credentials {
 						username = publishUser
-						setPassword(publishPassword)
+						password = publishPassword
 					}
 					url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
 				}
 			}
 		}
 		publications {
-			maven(MavenPublication) {
-				groupId = project.group
+			maybeCreate<MavenPublication>("maven").apply {
+				groupId = project.group.toString()
 				artifactId = project.name
-				version = project.version
-				from components.java
+				version = project.version.toString()
+				from(components["java"])
 				artifact(sourcesJar)
 				artifact(javadocJar)
 
 				pom {
-					name = project.name
-					description = project.property("project.description")
-					url = project.property("project.scm.url")
+					name.set(project.name.toString())
+					description.set(project.property("project.description").toString())
+					url.set(project.property("project.scm.url").toString())
 					licenses {
 						license {
-							name = project.property("project.license.name")
-							url = project.property("project.license.url")
+							name.set(project.property("project.license.name").toString())
+							url.set(project.property("project.license.url").toString())
 						}
 					}
 					scm {
-						url = project.property("project.scm.url")
+						url.set(project.property("project.scm.url").toString())
 					}
 				}
 			}
@@ -142,25 +149,27 @@ subprojects {
 	}
 }
 
-task publish(type: Task) {
+fun ByteArray.encodeBase64() = Base64.getEncoder().encodeToString(this)
+
+val publish by tasks.creating {
 	subprojects {
 		dependsOn(":${project.name}:publish")
 	}
 	doLast {
-		def subject = project.property("project.bintray.org")
-		def repo = project.property("project.bintray.repository")
-		def _package = project.property("project.bintray.package")
-		def version = project.version
+		val subject = project.property("project.bintray.org")
+		val repo = project.property("project.bintray.repository")
+		val _package = project.property("project.bintray.package")
+		val version = project.version
 
-		((HttpURLConnection)new URL("https://bintray.com/api/v1/content/$subject/$repo/$_package/$version/publish").openConnection()).with({
-			requestMethod = 'POST'
+		((URL("https://bintray.com/api/v1/content/$subject/$repo/$_package/$version/publish")).openConnection() as HttpURLConnection).apply {
+			requestMethod = "POST"
 			doOutput = true
 
-			setRequestProperty("Authorization", "Basic " + "$publishUser:$publishPassword".bytes.encodeBase64().toString())
-			outputStream.withPrintWriter({printWriter ->
-				printWriter.write('{"discard": false, "publish_wait_for_secs": -1}')
-			})
-			System.out.println(inputStream.text)
-		})
+			setRequestProperty("Authorization", "Basic " + "$publishUser:$publishPassword".toByteArray().encodeBase64().toString())
+			PrintWriter(outputStream).use { printWriter ->
+				printWriter.write("""{"discard": false, "publish_wait_for_secs": -1}""")
+			}
+			println(inputStream.readBytes().toString(Charsets.UTF_8))
+		}
 	}
 }
