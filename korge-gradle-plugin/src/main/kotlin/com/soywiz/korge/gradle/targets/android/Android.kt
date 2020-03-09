@@ -84,6 +84,7 @@ fun Project.configureNativeAndroid() {
 				outputFolder["gradle"].mkdirs()
 				rootDir["gradle"].copyRecursively(outputFolder["gradle"], overwrite = true) { f, e -> OnErrorAction.SKIP }
 
+				File(outputFolder, "korge.keystore").writeBytes(getResourceBytes("korge.keystore"))
 				File(outputFolder, "build.gradle").conditionally(ifNotExists) {
 					ensureParents().writeText(Indenter {
 						line("buildscript") {
@@ -127,13 +128,23 @@ fun Project.configureNativeAndroid() {
                                 val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
 								line("manifestPlaceholders = ${if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }")
 							}
+							line("signingConfigs") {
+								line("release") {
+									line("storeFile file(findProperty('RELEASE_STORE_FILE') ?: 'korge.keystore')")
+									line("storePassword findProperty('RELEASE_STORE_PASSWORD') ?: 'password'")
+									line("keyAlias findProperty('RELEASE_KEY_ALIAS') ?: 'korge'")
+									line("keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: 'password'")
+								}
+							}
 							line("buildTypes") {
 								line("debug") {
 									line("minifyEnabled false")
 								}
 								line("release") {
-									line("minifyEnabled false")
+									//line("minifyEnabled false")
+									line("minifyEnabled true")
 									line("proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'")
+									line("signingConfig signingConfigs.release")
 								}
 							}
 							line("sourceSets") {
