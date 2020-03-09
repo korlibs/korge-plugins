@@ -286,7 +286,11 @@ private fun Project.addWeb() {
 			val server = staticHttpServer(project.buildDir["web"], address = address, port = port)
 			_webServer = server
 			try {
-				openBrowser("http://$address:${server.port}/index.html")
+				val openAddress = when (address) {
+					"0.0.0.0" -> "127.0.0.1"
+					else -> address
+				}
+				openBrowser("http://$openAddress:${server.port}/index.html")
 				if (blocking) {
 					while (true) {
 						Thread.sleep(1000L)
