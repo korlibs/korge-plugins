@@ -111,7 +111,9 @@ fun Project.configureNativeAndroid() {
                                 line("exclude 'META-INF/NOTICE'")
                                 line("exclude 'META-INF/NOTICE.txt'")
                                 line("exclude 'META-INF/notice.txt'")
-                                line("exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'")
+                                line("exclude 'META-INF/*.kotlin_module'")
+								line("exclude '**/*.kotlin_metadata'")
+								line("exclude '**/*.kotlin_builtins'")
                             }
 							line("compileSdkVersion 28")
 							line("defaultConfig") {
