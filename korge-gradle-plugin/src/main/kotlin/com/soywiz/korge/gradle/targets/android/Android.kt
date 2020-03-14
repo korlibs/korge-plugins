@@ -139,6 +139,7 @@ fun Project.configureNativeAndroid() {
 							line("buildTypes") {
 								line("debug") {
 									line("minifyEnabled false")
+									line("signingConfig signingConfigs.release")
 								}
 								line("release") {
 									//line("minifyEnabled false")
