@@ -199,6 +199,20 @@ fun Project.configureNativeAndroid() {
 		}
 	}
 
+	val bundleAndroid = tasks.create("bundleAndroid", GradleBuild::class.java) { task ->
+		task.apply {
+			group = GROUP_KORGE_INSTALL
+			dependsOn(prepareAndroidBootstrap)
+			buildFile = File(buildDir, "platforms/android/build.gradle")
+			version = "4.10.1"
+			tasks = listOf("bundle")
+		}
+	}
+
+	val buildAndroidAar = tasks.create("buildAndroidAar", GradleBuild::class.java) { task ->
+		task.dependsOn(bundleAndroid)
+	}
+
 	// adb shell am start -n com.package.name/com.package.name.ActivityName
 	for (debug in listOf(false, true)) {
 		val suffixDebug = if (debug) "Debug" else "Release"
