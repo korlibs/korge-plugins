@@ -63,15 +63,23 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 				//val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
 				//manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
 			}
+			signingConfigs {
+				it.maybeCreate("release").apply {
+					storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: "korge.keystore")
+					storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password"
+					keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge"
+					keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password"
+				}
+			}
 			buildTypes {
 				it.maybeCreate("debug").apply {
 					isMinifyEnabled = false
-					//signingConfig = signingConfigs.getByName("release")
+					signingConfig = signingConfigs.getByName("release")
 				}
 				it.maybeCreate("release").apply {
 					isMinifyEnabled = true
-					//proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
-					//signingConfig signingConfigs.release
+					proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+					signingConfig = signingConfigs.getByName("release")
 				}
 			}
 		}
@@ -82,6 +90,7 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 
 			//line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
 			project.afterEvaluate {
+			//run {
 
 				val resolvedArtifacts = LinkedHashMap<String, String>()
 
