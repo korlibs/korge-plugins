@@ -102,7 +102,9 @@ class KorgeExtension(val project: Project) {
 		// Do nothing, but serves to be referenced to be installed
 	}
 
-	var id: String = "com.unknown.unknownapp"
+	var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
+	var enableCordovaTargets: Boolean = project.findProperty("enable.cordova.targets") == "true"
+    var id: String = "com.unknown.unknownapp"
 	var version: String = "0.0.1"
 
 	var exeBaseName: String = "app"

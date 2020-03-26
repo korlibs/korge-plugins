@@ -49,7 +49,7 @@ fun Project.configureNativeAndroid() {
 	val prepareAndroidBootstrap = tasks.create("prepareAndroidBootstrap") { task ->
 		task.dependsOn("compileTestKotlinJvm") // So artifacts are resolved
 		task.apply {
-			val overwrite = true
+			val overwrite = korge.overwriteAndroidFiles
 			val outputFolder = File(buildDir, "platforms/android")
 			doLast {
 				val androidPackageName = korge.id
@@ -84,7 +84,6 @@ fun Project.configureNativeAndroid() {
 				outputFolder["gradle"].mkdirs()
 				rootDir["gradle"].copyRecursively(outputFolder["gradle"], overwrite = true) { f, e -> OnErrorAction.SKIP }
 
-				File(outputFolder, "korge.keystore").writeBytes(getResourceBytes("korge.keystore"))
 				File(outputFolder, "build.gradle").conditionally(ifNotExists) {
 					ensureParents().writeText(Indenter {
 						line("buildscript") {
@@ -191,80 +190,7 @@ fun Project.configureNativeAndroid() {
 					}.toString())
 				}
 
-				File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
-					ensureParents().writeBytes(korge.getIconBytes())
-				}
-
-				File(outputFolder, "src/main/AndroidManifest.xml").conditionally(ifNotExists) {
-					ensureParents().writeText(Indenter {
-						line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-						line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
-						indent {
-							line("<application")
-							indent {
-								line("")
-								line("android:allowBackup=\"true\"")
-								line("android:label=\"$androidAppName\"")
-								line("android:icon=\"@mipmap/icon\"")
-								//line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-								//line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-								line("android:supportsRtl=\"true\"")
-								line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
-							}
-							line(">")
-							indent {
-								for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidManifestApplication() }) {
-									line(text)
-								}
-								for (text in korge.androidManifestApplicationChunks) {
-									line(text)
-								}
-
-								line("<activity android:name=\".MainActivity\">")
-								indent {
-									line("<intent-filter>")
-									indent {
-										line("<action android:name=\"android.intent.action.MAIN\"/>")
-										line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
-									}
-									line("</intent-filter>")
-								}
-								line("</activity>")
-							}
-							line("</application>")
-							for (text in korge.androidManifestChunks) {
-								line(text)
-							}
-						}
-						line("</manifest>")
-					}.toString())
-				}
-
-				File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
-					ensureParents().writeText(Indenter {
-						line("package $androidPackageName")
-
-						line("import com.soywiz.klock.*")
-						line("import com.soywiz.korge.*")
-						line("import com.soywiz.korge.tween.*")
-						line("import com.soywiz.korge.view.*")
-						line("import com.soywiz.korgw.*")
-						line("import com.soywiz.korim.color.*")
-						line("import com.soywiz.korma.geom.*")
-						line("import kotlinx.coroutines.*")
-						line("import ${korge.entryPoint}")
-
-						line("class MainActivity : KorgwActivity()") {
-							line("override suspend fun activityMain()") {
-								for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
-									line(text)
-								}
-								line("${korge.entryPoint}()")
-							}
-						}
-					}.toString())
-				}
-
+				writeAndroidManifest(outputFolder, korge)
 
 				File(outputFolder, "gradle.properties").conditionally(ifNotExists) {
 					ensureParents().writeText("org.gradle.jvmargs=-Xmx1536m")
@@ -313,4 +239,102 @@ fun Project.configureNativeAndroid() {
 			}
 		}
 	}
+}
+
+fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
+	val androidPackageName = korge.id
+	val androidAppName = korge.name
+	val ifNotExists = korge.overwriteAndroidFiles
+	File(outputFolder, "src/main/AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
+		ensureParents().writeText(Indenter {
+			line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+			line("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\" package=\"$androidPackageName\">")
+			indent {
+				line("<application")
+				indent {
+					line("")
+					line("android:allowBackup=\"true\"")
+					line("android:label=\"$androidAppName\"")
+					line("android:icon=\"@mipmap/icon\"")
+					//line("android:icon=\"@android:drawable/sym_def_app_icon\"")
+					//line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
+					line("android:supportsRtl=\"true\"")
+					line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
+				}
+				line(">")
+				indent {
+					for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidManifestApplication() }) {
+						line(text)
+					}
+					for (text in korge.androidManifestApplicationChunks) {
+						line(text)
+					}
+
+					line("<activity android:name=\".MainActivity\">")
+					indent {
+						line("<intent-filter>")
+						indent {
+							line("<action android:name=\"android.intent.action.MAIN\"/>")
+							line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
+						}
+						line("</intent-filter>")
+					}
+					line("</activity>")
+				}
+				line("</application>")
+				for (text in korge.androidManifestChunks) {
+					line(text)
+				}
+			}
+			line("</manifest>")
+		}.toString())
+	}
+	File(outputFolder, "korge.keystore").conditionally(ifNotExists) {
+		ensureParents().writeBytes(getResourceBytes("korge.keystore"))
+	}
+	File(outputFolder, "src/main/res/mipmap-mdpi/icon.png").conditionally(ifNotExists) {
+		ensureParents().writeBytes(korge.getIconBytes())
+	}
+	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
+		ensureParents().writeText(Indenter {
+			line("package $androidPackageName")
+
+			line("import com.soywiz.klock.*")
+			line("import com.soywiz.korge.*")
+			line("import com.soywiz.korge.tween.*")
+			line("import com.soywiz.korge.view.*")
+			line("import com.soywiz.korgw.*")
+			line("import com.soywiz.korim.color.*")
+			line("import com.soywiz.korma.geom.*")
+			line("import kotlinx.coroutines.*")
+			line("import ${korge.entryPoint}")
+
+			line("class MainActivity : KorgwActivity()") {
+				line("override suspend fun activityMain()") {
+					for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
+						line(text)
+					}
+					line("${korge.entryPoint}()")
+				}
+			}
+		}.toString())
+	}
+}
+
+val tryAndroidSdkDirs = listOf(
+	File(System.getProperty("user.home"), "/Library/Android/sdk"),
+	File(System.getProperty("user.home"), "/Android/Sdk")
+)
+
+val prop_sdk_dir = System.getProperty("sdk.dir")
+val prop_ANDROID_HOME = System.getenv("ANDROID_HOME")
+var hasAndroidConfigured = ((prop_sdk_dir != null) || (prop_ANDROID_HOME != null))
+
+fun Project.tryToDetectAndroidSdkPath(): File? {
+	for (tryAndroidSdkDirs in tryAndroidSdkDirs) {
+		if (tryAndroidSdkDirs.exists()) {
+			return tryAndroidSdkDirs.absoluteFile
+		}
+	}
+	return null
 }

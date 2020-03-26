@@ -42,7 +42,7 @@ val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korg
 //val node_modules by lazy { project.file("node_modules") }
 
 class KorgeGradleApply(val project: Project) {
-	fun apply() = project {
+	fun apply(includeIndirectAndroid: Boolean = true) = project {
 		System.setProperty("java.awt.headless", "true")
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
@@ -65,12 +65,16 @@ class KorgeGradleApply(val project: Project) {
 
 		if (korge.nativeEnabled) {
 			project.configureNativeDesktop()
-			project.configureNativeAndroid()
+			if (includeIndirectAndroid) {
+				project.configureNativeAndroid()
+			}
 			if (isMacos) {
 				project.configureNativeIos()
 			}
 		}
-		project.configureCordova()
+		if (korge.enableCordovaTargets) {
+			project.configureCordova()
+		}
 		project.configureJavaScript()
 
 		project.korge.init()
@@ -124,23 +128,17 @@ class KorgeGradleApply(val project: Project) {
 		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
 		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
 
-
 		//println("com.soywiz.korlibs.korge:korge:$korgeVersion")
 		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge:korge:$korgeVersion")
-
 		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
 		//}
-
 		//kotlin.sourceSets.create("")
-
 	}
-
-
 }
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
-		KorgeGradleApply(project).apply()
+		KorgeGradleApply(project).apply(includeIndirectAndroid = false)
 
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
