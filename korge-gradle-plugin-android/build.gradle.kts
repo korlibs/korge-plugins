@@ -16,10 +16,10 @@ pluginBundle {
 gradlePlugin {
 	plugins {
 		create("korge-android") {
-			id = "com.soywiz.korge"
-			displayName = "Korge"
+			id = "com.soywiz.korge.android"
+			displayName = "KorgeAndroid"
 			description = "Multiplatform Game Engine for Kotlin with integrated android support"
-			implementationClass = "com.soywiz.korge.gradle.KorgeGradlePlugin"
+			implementationClass = "com.soywiz.korge.gradle.KorgeWithAndroidGradlePlugin"
 		}
 	}
 }
