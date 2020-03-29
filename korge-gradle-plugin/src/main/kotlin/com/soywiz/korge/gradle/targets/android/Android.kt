@@ -98,7 +98,11 @@ fun Project.configureNativeAndroid() {
 							line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") }")
 						}
 
-						line("apply plugin: 'com.android.application'")
+						if (korge.androidLibrary) {
+							line("apply plugin: 'com.android.library'")
+						} else {
+							line("apply plugin: 'com.android.application'")
+						}
 						line("apply plugin: 'kotlin-android'")
 						line("apply plugin: 'kotlin-android-extensions'")
 

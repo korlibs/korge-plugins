@@ -19,6 +19,8 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 			}
 		}
 
+		val korge = project.korge
+
 		KorgeGradleApply(project).apply(includeIndirectAndroid = korge.androidLibrary)
 
 		project.repositories.apply {
@@ -30,8 +32,6 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 		//val android = project.extensions.getByName("android")
 
 		project.kotlin.android()
-
-		val korge = project.korge
 
 		project.afterEvaluate {
 			writeAndroidManifest(project.rootDir, project.korge)
