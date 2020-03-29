@@ -102,6 +102,8 @@ class KorgeExtension(val project: Project) {
 		// Do nothing, but serves to be referenced to be installed
 	}
 
+	//var jvmTarget: String = project.findProject("jvm.target") ?: "1.8"
+	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: "1.6"
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
 	var enableCordovaTargets: Boolean = project.findProperty("enable.cordova.targets") == "true"

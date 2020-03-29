@@ -5,7 +5,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.*
 
-suspend fun AsyncInputStream.hash(factory: HashFactory): ByteArray {
+suspend fun AsyncInputStream.hash(factory: HasherFactory): ByteArray {
 	val hash = factory.create()
 	val temp = ByteArray(64 * 1024)
 	while (true) {
@@ -13,7 +13,7 @@ suspend fun AsyncInputStream.hash(factory: HashFactory): ByteArray {
 		if (read <= 0) break
 		hash.update(temp, 0, read)
 	}
-	return hash.digest()
+	return hash.digest().bytes
 }
 
-suspend fun VfsFile.hash(factory: HashFactory): ByteArray = openInputStream().use { this.hash(factory) }
+suspend fun VfsFile.hash(factory: HasherFactory): ByteArray = openInputStream().use { this.hash(factory) }

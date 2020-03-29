@@ -27,7 +27,7 @@ fun Project.configureJvm() {
 
     project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
         it.kotlinOptions {
-            this.jvmTarget = "1.8"
+            this.jvmTarget = korge.jvmTarget
         }
     }
 
