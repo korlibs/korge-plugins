@@ -118,7 +118,11 @@ fun Project.configureNativeAndroid() {
 							line("compileSdkVersion 28")
 							line("defaultConfig") {
 								line("multiDexEnabled true")
-								line("applicationId '$androidPackageName'")
+
+								if (!korge.androidLibrary) {
+									line("applicationId '$androidPackageName'")
+								}
+
 								line("minSdkVersion 19")
 								line("targetSdkVersion 28")
 								line("versionCode 1")
@@ -205,7 +209,7 @@ fun Project.configureNativeAndroid() {
 			dependsOn(prepareAndroidBootstrap)
 			buildFile = File(buildDir, "platforms/android/build.gradle")
 			version = "4.10.1"
-			tasks = listOf("bundle")
+			tasks = listOf("bundleDebugAar")
 		}
 	}
 
@@ -268,12 +272,17 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 				indent {
 					line("")
 					line("android:allowBackup=\"true\"")
-					line("android:label=\"$androidAppName\"")
-					line("android:icon=\"@mipmap/icon\"")
-					//line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-					//line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
+
+					if (!korge.androidLibrary) {
+						line("android:label=\"$androidAppName\"")
+						line("android:icon=\"@mipmap/icon\"")
+						line("android:icon=\"@android:drawable/sym_def_app_icon\"")
+						line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
+						line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
+					}
+
+
 					line("android:supportsRtl=\"true\"")
-					line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
 				}
 				line(">")
 				indent {
@@ -285,13 +294,16 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 					}
 
 					line("<activity android:name=\".MainActivity\">")
-					indent {
-						line("<intent-filter>")
+
+					if (!korge.androidLibrary) {
 						indent {
-							line("<action android:name=\"android.intent.action.MAIN\"/>")
-							line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
+							line("<intent-filter>")
+							indent {
+								line("<action android:name=\"android.intent.action.MAIN\"/>")
+								line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
+							}
+							line("</intent-filter>")
 						}
-						line("</intent-filter>")
 					}
 					line("</activity>")
 				}

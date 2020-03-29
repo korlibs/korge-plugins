@@ -19,7 +19,8 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 			}
 		}
 
-		KorgeGradleApply(project).apply(includeIndirectAndroid = false)
+		KorgeGradleApply(project).apply(includeIndirectAndroid = korge.androidLibrary)
+
 		project.repositories.apply {
 			google()
 		}

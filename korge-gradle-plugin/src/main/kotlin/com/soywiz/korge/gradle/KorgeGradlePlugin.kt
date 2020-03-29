@@ -138,7 +138,9 @@ class KorgeGradleApply(val project: Project) {
 
 open class KorgeGradlePlugin : Plugin<Project> {
 	override fun apply(project: Project) {
-		KorgeGradleApply(project).apply(includeIndirectAndroid = false)
+
+		//TODO PABLO changed to have the android tasks enabled again
+		KorgeGradleApply(project).apply(includeIndirectAndroid = true)
 
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
