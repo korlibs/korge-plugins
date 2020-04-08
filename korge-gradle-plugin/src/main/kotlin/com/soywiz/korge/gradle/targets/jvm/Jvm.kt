@@ -55,6 +55,11 @@ fun Project.configureJvm() {
 					}
 				}
 
+				if ((System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14) {
+					println("Using ZGC")
+					task.jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
+				}
+
 				task.main = korge.jvmMainClassName
 			}
 		}
