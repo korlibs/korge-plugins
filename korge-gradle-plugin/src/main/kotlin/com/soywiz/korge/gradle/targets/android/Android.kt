@@ -329,22 +329,18 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 		ensureParents().writeText(Indenter {
 			line("package $androidPackageName")
 
-			line("import com.soywiz.klock.*")
-			line("import com.soywiz.korge.*")
-			line("import com.soywiz.korge.tween.*")
-			line("import com.soywiz.korge.view.*")
-			line("import com.soywiz.korgw.*")
-			line("import com.soywiz.korim.color.*")
-			line("import com.soywiz.korma.geom.*")
-			line("import kotlinx.coroutines.*")
+			line("import com.soywiz.korio.android.withAndroidContext")
+			line("import com.soywiz.korgw.KorgwActivity")
 			line("import ${korge.entryPoint}")
 
 			line("class MainActivity : KorgwActivity()") {
 				line("override suspend fun activityMain()") {
-					for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
-						line(text)
+					line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
+						for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
+							line(text)
+						}
+						line("${korge.entryPoint}()")
 					}
-					line("${korge.entryPoint}()")
 				}
 			}
 		}.toString())
