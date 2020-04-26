@@ -261,7 +261,7 @@ private fun Project.addWeb() {
         }
 	}
 
-	val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar")) { task ->
+	val jsWeb = project.addTask<JsWebCopy>(name = "jsWeb", dependsOn = listOf("jsJar", "jsMainClasses")) { task ->
 		task.group = GROUP_KORGE_PACKAGE
 		configureJsWeb(task, minimized = false)
 	}
