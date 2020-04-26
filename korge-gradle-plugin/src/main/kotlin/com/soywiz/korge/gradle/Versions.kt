@@ -17,3 +17,19 @@ val Project.kotlinVersion get() = findProperty("kotlinVersion") ?: BuildVersions
 val Project.androidBuildGradleVersion get() = findProperty("androidBuildGradleVersion") ?: BuildVersions.ANDROID_BUILD
 val Project.coroutinesVersion get() = findProperty("coroutinesVersion") ?: BuildVersions.COROUTINES
 
+fun Project.getModuleVersion(name: String, defaultVersion: Any): Any {
+	return when (name.split(':').last().trim().toLowerCase().split('-').first().trim()) {
+		"klock" -> klockVersion
+		"kmem" -> kmemVersion
+		"kds" -> kdsVersion
+		"korio" -> korioVersion
+		"korma" -> kormaVersion
+		"korau" -> korauVersion
+		"korim" -> korimVersion
+		"korgw" -> korgwVersion
+		"korge" -> korgeVersion
+		"kotlin" -> kotlinVersion
+		"kotlinx.coroutines" -> coroutinesVersion
+		else -> defaultVersion
+	}
+}

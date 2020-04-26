@@ -176,8 +176,10 @@ fun Project.configureNativeAndroid() {
 								if (name.startsWith("org.jetbrains.kotlin")) continue
 								if (name.contains("-metadata")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
-                                if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
-                                    line("implementation '$name-android:$version'")
+                                //if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
+								if (name.startsWith("com.soywiz.korlibs.")) {
+									val rversion = getModuleVersion(name, version)
+                                    line("implementation '$name-android:$rversion'")
                                 }
 							}
 
@@ -335,12 +337,12 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 
 			line("class MainActivity : KorgwActivity()") {
 				line("override suspend fun activityMain()") {
-					line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
+					//line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
 						for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
 							line(text)
 						}
 						line("${korge.entryPoint}()")
-					}
+					//}
 				}
 			}
 		}.toString())
