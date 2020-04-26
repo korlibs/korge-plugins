@@ -352,8 +352,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 }
 
 val tryAndroidSdkDirs = listOf(
-	File(System.getProperty("user.home"), "/Library/Android/sdk"),
-	File(System.getProperty("user.home"), "/Android/Sdk")
+	File(System.getProperty("user.home"), "/Library/Android/sdk"), // MacOS
+	File(System.getProperty("user.home"), "/Android/Sdk"), // Linux
+	File(System.getProperty("user.home"), "/AppData/Local/Android/Sdk") // Windows
 )
 
 val prop_sdk_dir = System.getProperty("sdk.dir")
