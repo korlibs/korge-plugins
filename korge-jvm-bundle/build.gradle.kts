@@ -77,8 +77,9 @@ dependencies {
 	add("rtArtifacts", "com.soywiz.korlibs.korgw:korgw-jvm:${version("korgw")}")
 	add("rtArtifacts", "com.soywiz.korlibs.korge:korge-jvm:${version("korge")}")
 	add("rtArtifacts", "com.soywiz.korlibs.korge:korge-swf-jvm:${version("korge")}")
-	add("rtArtifacts", "org.jetbrains.kotlin:kotlin-stdlib:${version("kotlin")}")
 	add("rtArtifacts", "org.jetbrains.kotlinx:kotlinx-coroutines-core:${version("coroutines")}")
+
+	//add("rtArtifacts", "org.jetbrains.kotlin:kotlin-stdlib:${version("kotlin")}")
 	//add("rtArtifacts", "org.jetbrains.kotlin:kotlin-runtime:${version("kotlin")}")
 }
 
