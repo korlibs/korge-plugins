@@ -280,7 +280,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 					if (!korge.androidLibrary) {
 						line("android:label=\"$androidAppName\"")
 						line("android:icon=\"@mipmap/icon\"")
-						line("android:icon=\"@android:drawable/sym_def_app_icon\"")
+						// // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
 						line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
 						line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
 					}
