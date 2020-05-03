@@ -21,11 +21,11 @@ fun Project.configureJvm() {
 	gkotlin.targets.add(jvmTarget)
 	//jvmTarget.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 
-	project.dependencies.add("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-	project.dependencies.add("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
+	project.korge.addDependency("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
 
-    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
+	project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
         it.kotlinOptions {
             this.jvmTarget = korge.jvmTarget
         }
