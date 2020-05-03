@@ -326,6 +326,24 @@ class KorgeExtension(val project: Project) {
 		dependencyMulti("$dependency:cinterop-$cinterop@klib", targets)
 	}
 
+	fun addDependency(config: String, notation: String) {
+		val cfg = project.configurations.findByName(config)
+		if (cfg == null) {
+			// @TODO: Turkish hack. This doesn't seems right. Probably someone messed something up.
+			if (config.endsWith("Implementation")) {
+				val config2 = config.removeSuffix("Implementation") + "İmplementation"
+				println("Can't find config: $config . Trying: $config2 (Turkish hack)")
+				return addDependency(config2, notation)
+			}
+
+			for (rcfg in project.configurations) {
+				println("CONFIGURATION: ${rcfg.name}")
+			}
+			error("Can't find configuration '$config'")
+		}
+		project.dependencies.add(config, notation)
+	}
+
 }
 
 // println(project.resolveArtifacts("com.soywiz.korlibs.korge:korge-metadata:1.0.0"))

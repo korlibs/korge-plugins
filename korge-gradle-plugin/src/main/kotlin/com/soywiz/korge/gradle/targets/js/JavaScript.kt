@@ -61,8 +61,8 @@ fun Project.configureJavaScript() {
 		}
 	}
 
-	project.dependencies.add("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
-	project.dependencies.add("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
+	project.korge.addDependency("jsMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-js")
+	project.korge.addDependency("jsTestImplementation", "org.jetbrains.kotlin:kotlin-test-js")
 
 	configureNode()
 	addWeb()

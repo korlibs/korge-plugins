@@ -124,9 +124,9 @@ class KorgeGradleApply(val project: Project) {
 	private fun Project.configureKotlin() {
 		plugins.apply("kotlin-multiplatform")
 
-		project.dependencies.add("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
-		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
-		project.dependencies.add("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
+		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
+		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-annotations-common")
+		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test-common")
 
 		//println("com.soywiz.korlibs.korge:korge:$korgeVersion")
 		//project.dependencies.add("commonMainImplementation", "com.soywiz.korlibs.korge:korge:$korgeVersion")
