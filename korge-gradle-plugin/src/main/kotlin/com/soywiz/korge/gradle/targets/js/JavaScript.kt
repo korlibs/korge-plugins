@@ -247,8 +247,24 @@ private fun Project.addWeb() {
 				else -> getResourceBytes(requireMinJsTemplateFile).toString(Charsets.UTF_8)
 			}
 
-			val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
-            task.targetDir["kotlin.js"].writeText(task.targetDir["kotlin.js"].readText().replace(src, dst))
+			/*
+  function isInheritanceFromInterface(ctor, iface) {
+    if (ctor === iface)
+      return true;
+    var metadata = ctor.$metadata$;
+    if (metadata != null) {
+      var interfaces = metadata.interfaces;
+      for (var i = 0; i < interfaces.length; i++) {
+        if (isInheritanceFromInterface(interfaces[i], iface)) {
+          return true;
+        }}
+    }var superPrototype = ctor.prototype != null ? Object.getPrototypeOf(ctor.prototype) : null;
+    var superConstructor = superPrototype != null ? superPrototype.constructor : null;
+    return superConstructor != null && isInheritanceFromInterface(superConstructor, iface);
+  }
+			 */
+
+            task.targetDir["kotlin.js"].writeText(applyPatchesToKotlinRuntime(task.targetDir["kotlin.js"].readText()))
             task.targetDir["index.html"].writeText(
                 SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(mapOf(
                     "OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
@@ -381,4 +397,42 @@ private fun Project.addWeb() {
 			webMinWebpackFolder["index.html"].writeText(indexHtml.replace(Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"), "<script src=\"bundle.js\" type=\"text/javascript\"></script>"))
 		}
 	}
+}
+
+fun applyPatchToKotlinRuntime(runtime: String, patchSrc: String, patchDst: String): String {
+	val srcRegex = Regex(patchSrc
+		.trim()
+		.replace("\\", "\\\\")
+		.replace(".", "\\.")
+		.replace("?", "\\?")
+		.replace("[", "\\[")
+		.replace("(", "\\(")
+		.replace("{", "\\{")
+		.replace(")", "\\)")
+		.replace("}", "\\}")
+		.replace("]", "\\]")
+		.replace("+", "\\+")
+		.replace("*", "\\*")
+		.replace("\$", "\\\$")
+		.replace("^", "\\^")
+		.replace(Regex("\\s+", RegexOption.MULTILINE), "\\\\s*")
+		, setOf(
+			RegexOption.MULTILINE, RegexOption.IGNORE_CASE
+		))
+	//println(srcRegex.pattern)
+	return runtime.replace(srcRegex) { result ->
+		val srcLines = result.value.lines().size
+		val dstLines = patchDst.lines().size
+		if (srcLines > dstLines) {
+			patchDst + "\n".repeat(srcLines - dstLines)
+		} else {
+			println("WARNING: More lines in patch than expected")
+			patchDst
+		}
+	}
+}
+
+fun applyPatchesToKotlinRuntime(runtime: String): String {
+	val (src, dst) = getResourceString("/patches/isInheritanceFromInterface.kotlin.js.patch").split("--------------------------------")
+	return applyPatchToKotlinRuntime(runtime, src, dst)
 }

@@ -24,10 +24,6 @@ function getAllInterfaces(ctor) {
         var superPrototype = ctor.prototype != null ? Object.getPrototypeOf(ctor.prototype) : null;
         var superConstructor = superPrototype != null ? superPrototype.constructor : null;
         if (superConstructor != null) allInterfaces.push.apply(allInterfaces, getAllInterfaces(superConstructor));
-        metadata._allInterfaces = metadata._allInterfaces.filter(function(item, pos, self) { return self.indexOf(item) === pos; });
-    }
-    return metadata._allInterfaces;
-}
+        metadata._allInterfaces = metadata._allInterfaces.filter(function(item, pos, self) { return self.indexOf(item) === pos; });}
+    return metadata._allInterfaces;}
 function isInheritanceFromInterface(ctor, iface) { if (ctor === iface) return true; else return getAllInterfaces(ctor).indexOf(iface) >= 0; }
-// line 15: padding to keep sourcemaps working
-// line 16: padding to keep sourcemaps working
