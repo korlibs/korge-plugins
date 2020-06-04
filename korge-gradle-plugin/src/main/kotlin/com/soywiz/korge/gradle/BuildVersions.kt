@@ -10,7 +10,7 @@ object BuildVersions {
 	const val KORIM = "1.12.19"
 	const val KORAU = "1.11.8"
 	const val KORGW = "1.12.10"
-	const val KORGE = "1.12.13"
+	const val KORGE = "1.12.14"
 	const val KOTLIN = "1.3.72"
 	const val COROUTINES = "1.3.7"
 	const val ANDROID_BUILD = "3.6.0"
