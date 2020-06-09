@@ -42,7 +42,7 @@ fun Project.configureJvm() {
 			dependsOn("jvmMainClasses")
 			systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
-			task.doFirst {
+			project.afterEvaluate {
 				val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
 				val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
 
