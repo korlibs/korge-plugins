@@ -42,6 +42,14 @@ fun Project.configureJvm() {
 			dependsOn("jvmMainClasses")
 			systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
 
+			val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
+
+			task.doFirst {
+				if (useZgc) {
+					println("Using ZGC")
+				}
+			}
+
 			project.afterEvaluate {
 				val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
 				val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
@@ -55,8 +63,7 @@ fun Project.configureJvm() {
 					}
 				}
 
-				if ((System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14) {
-					println("Using ZGC")
+				if (useZgc) {
 					task.jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
 				}
 
