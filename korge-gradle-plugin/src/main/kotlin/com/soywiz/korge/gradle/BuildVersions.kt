@@ -9,7 +9,7 @@ object BuildVersions {
 	const val KORIO = "1.11.7"
 	const val KORIM = "1.12.24"
 	const val KORAU = "1.11.9"
-	const val KORGW = "1.12.13"
+	const val KORGW = "1.12.16"
 	const val KORGE = "1.13.2"
 	const val KOTLIN = "1.3.72"
 	const val COROUTINES = "1.3.7"
