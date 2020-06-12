@@ -88,7 +88,7 @@ fun Project.configureJavaScript() {
 				if (minimized) {
 					from((project["runDceJsKotlin"] as KotlinJsDce).destinationDir) { copy -> copy.exclude(*excludesNormal) }
 				}
-				from(compileKotlinJs.outputFile)
+				//from(compileKotlinJs.outputFile)
 				//from("${project.buildDir}/npm/node_modules") { copy -> copy.configureWeb() }
 				//println("compileKotlinJs.outputFile: ${compileKotlinJs.outputFile}")
 				project.afterEvaluate {
@@ -235,7 +235,7 @@ private val excludesNormal = arrayOf(
 	"META-INF/**",
 	"**/linkdata/module",
 	"**/*.MF",
-	"**/*.map", "**/*.meta.js", "**/*.class",
+	"**/*.meta.js", "**/*.class",
 	"**/DebugProbesKt.bin",
 	"**/*.kjsm", "**/*.knb", "**/*.knf", "**/*.knm", "**/*.knd", "**/*.knt"
 )
