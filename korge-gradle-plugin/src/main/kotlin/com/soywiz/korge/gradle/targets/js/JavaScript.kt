@@ -4,6 +4,7 @@ import com.moowork.gradle.node.*
 import com.moowork.gradle.node.exec.*
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
+import com.soywiz.kds.mapWhile
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
@@ -369,6 +370,18 @@ private fun Project.addWeb() {
 
 			val webpackConfigJs = buildDir["webpack.config.js"]
 
+			fun getProjectAscendants(project: Project): List<Project> {
+				val projects = arrayListOf<Project>()
+				var cproject: Project? = project
+				while (cproject != null) {
+					projects += cproject
+					cproject = cproject?.parent
+				}
+				return projects
+			}
+
+			// @TODO: This is a hack
+			val fullJsName = getProjectAscendants(project).reversed().map { it.name }.joinToString("-")
 			webpackConfigJs.writeText("""
                     const path = require('path');
                     const webpack = require('webpack');
@@ -376,7 +389,7 @@ private fun Project.addWeb() {
 
                     module.exports = {
                       context: modules,
-                      entry: ${"$webMinFolder/${project.name}.js".quoted},
+                      entry: ${"$webMinFolder/${fullJsName}.js".quoted},
                       resolve: {
                         modules: [ modules ],
                       },
