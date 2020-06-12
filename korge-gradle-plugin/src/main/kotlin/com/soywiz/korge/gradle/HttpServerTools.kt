@@ -116,9 +116,9 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
 		val reqRange = if (range != null) {
 			val rangeStr = range.removePrefix("bytes=")
 			val parts = rangeStr.split("-", limit = 2)
-			val start = parts.getOrNull(0)?.toLongOrNull() ?: error("Invalid request")
-			val endInclusive = parts.getOrNull(1)?.toLongOrNull() ?: error("Invalid request")
-			start.coerceIn(0L, content.length)..endInclusive.coerceIn(0L, content.length - 1)
+			val start = parts.getOrNull(0)?.toLongOrNull() ?: error("Invalid request. Range: $range")
+			val endInclusive = parts.getOrNull(1)?.toLongOrNull() ?: Long.MAX_VALUE
+			start.coerceIn(0L, content.length - 1)..endInclusive.coerceIn(0L, content.length - 1)
 		} else {
 			null
 		}
@@ -129,14 +129,16 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
 
 		responseHeaders.add("Content-Type", content.contentType)
 		responseHeaders.add("Accept-Ranges", "bytes")
-		sendHeaders(headers)
-		sendResponseHeaders(if (partial) 206 else code ?: 200, length)
+		//println("Partial: $content, $partial, $range, $reqRange")
 		if (partial) {
 			responseHeaders.set(
 				"Content-Range",
 				"bytes ${reqRange!!.start}-${reqRange!!.endInclusive}/${content.length}"
 			)
 		}
+
+		sendHeaders(headers)
+		sendResponseHeaders(if (partial) 206 else code ?: 200, length)
 
 		// Send body if not HEAD
 		if (!this.requestMethod.equals("HEAD", ignoreCase = true)) {
