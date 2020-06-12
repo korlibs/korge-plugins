@@ -37,7 +37,6 @@ dependencies {
 	implementation(project(":korge-build"))
 
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-	implementation("com.moowork.gradle:gradle-node-plugin:1.2.0")
 	implementation("net.sf.proguard:proguard-gradle:6.2.2")
 
 	implementation(gradleApi())

@@ -1,6 +1,5 @@
 package com.soywiz.korge.gradle.targets.ios
 
-import com.moowork.gradle.node.npm.NpmTask
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.js.node_modules
@@ -841,11 +840,18 @@ fun Project.configureNativeIos() {
 		}
 	}
 
+	/*
 	tasks.create("installIosDeploy", NpmTask::class.java) { task ->
 		task.onlyIf { !node_modules["ios-deploy"].exists() }
 		task.setArgs(listOf("install", "--unsafe-perm=true", "ios-deploy@1.10.0"))
 	}
-
+	 */
+	tasks.create("installIosDeploy", Exec::class.java) { task ->
+		task.onlyIf { !node_modules["ios-deploy"].exists() }
+		task.setWorkingDir(korgeCacheDir)
+		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.10.0")
+		// @TODO: Automatically install ios-deploy
+	}
 }
 
 data class IosDevice(val booted: Boolean, val isAvailable: Boolean, val name: String, val udid: String)

@@ -1,7 +1,5 @@
 package com.soywiz.korge.gradle
 
-import com.moowork.gradle.node.*
-import com.moowork.gradle.node.npm.*
 import com.soywiz.kds.*
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
@@ -291,6 +289,7 @@ class KorgeExtension(val project: Project) {
 		return dependencyMulti(location.group, location.name, location.versionWithClassifier, targets)
 	}
 
+	/*
 	@JvmOverloads
 	fun dependencyNodeModule(name: String, version: String) = project {
 		val node = extensions.getByType(NodeExtension::class.java)
@@ -302,6 +301,7 @@ class KorgeExtension(val project: Project) {
 
 		tasks.getByName("jsTestNode").dependsOn(installNodeModule)
 	}
+	*/
 
 	data class CInteropTargets(val name: String, val targets: List<String>)
 

@@ -1,7 +1,6 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.targets.android.*
-import com.soywiz.korge.gradle.targets.cordova.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.ios.*
 import com.soywiz.korge.gradle.targets.isMacos
@@ -33,7 +32,7 @@ val Project.korge: KorgeExtension
 		}
 	}
 
-open class JsWebCopy() : DefaultTask() {
+open class JsWebCopy() : Copy() {
 	@OutputDirectory
 	open lateinit var targetDir: File
 }
@@ -71,9 +70,6 @@ class KorgeGradleApply(val project: Project) {
 			if (isMacos) {
 				project.configureNativeIos()
 			}
-		}
-		if (korge.enableCordovaTargets) {
-			project.configureCordova()
 		}
 		project.configureJavaScript()
 
