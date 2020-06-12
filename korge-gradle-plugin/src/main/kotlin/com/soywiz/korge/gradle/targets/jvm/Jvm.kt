@@ -139,15 +139,14 @@ private fun Project.addProguard() {
                 }
             """.trimIndent())
 
-			//task.keep("class jogamp.nativetag.**")
-			//task.keep("class jogamp.**")
-
-			task.keep("class com.jogamp.** { *; }")
-			task.keep("class jogamp.** { *; }")
+			task.keepnames("class com.sun.jna.** { *; }")
+			task.keepnames("class * extends com.sun.jna.** { *; }")
+			//task.keepnames("class org.jcodec.** { *; }")
+			task.keepattributes()
+			task.keep("class * implements com.sun.jna.** { *; }")
 			task.keep("class com.sun.jna.** { *; }")
 			task.keep("class ${project.korge.jvmMainClassName} { *; }")
-			task.keep("class * extends com.soywiz.korau.format.AudioFormat { *; }")
-			task.keep("class * implements com.sun.jna.Library { *; }")
+			task.keep("class org.jcodec.** { *; }")
 
 			if (runJvm.main?.isNotBlank() == true) {
 				task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
