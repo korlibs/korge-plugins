@@ -73,7 +73,10 @@ fun Project.configureJvm() {
 	}
 
 	for (jvmJar in project.getTasksByName("jvmJar", true)) {
-		(jvmJar as Jar).entryCompression = ZipEntryCompression.STORED
+		val jvmJar = (jvmJar as Jar)
+		jvmJar.apply {
+			entryCompression = ZipEntryCompression.STORED
+		}
 	}
 
 	addProguard()
@@ -91,6 +94,23 @@ private fun Project.addProguard() {
 	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = GROUP_KORGE) { task ->
 		task.baseName = "${project.name}-all"
 		task.group = GROUP_KORGE_PACKAGE
+		task.exclude(
+			"com/sun/jna/aix-ppc/**",
+			"com/sun/jna/aix-ppc64/**",
+			"com/sun/jna/freebsd-x86/**",
+			"com/sun/jna/freebsd-x86-64/**",
+			"com/sun/jna/linux-ppc/**",
+			"com/sun/jna/linux-ppc64le/**",
+			"com/sun/jna/linux-s390x/**",
+			"com/sun/jna/linux-mips64el/**",
+			"com/sun/jna/openbsd-x86/**",
+			"com/sun/jna/openbsd-x86-64/**",
+			"com/sun/jna/sunos-sparc/**",
+			"com/sun/jna/sunos-sparcv9/**",
+			"com/sun/jna/sunos-x86/**",
+			"com/sun/jna/sunos-x86-64/**",
+			"natives/macosx64/**"
+		)
 		project.afterEvaluate {
 			task.manifest { manifest ->
 				manifest.attributes(
@@ -127,7 +147,6 @@ private fun Project.addProguard() {
 			//println(packageJvmFatJar.outputs.files.toList())
 			task.injars(packageJvmFatJar.outputs.files.toList())
 			task.outjars(buildDir["/libs/${project.name}-all-proguard.jar"])
-
 			task.dontwarn()
 			task.ignorewarnings()
 			if (!project.korge.proguardObfuscate) {
