@@ -31,43 +31,18 @@ fun Project.configureJvm() {
         }
     }
 
-	for (firstThread in listOf(null, false, true)) {
-		val extra = when {
-			firstThread == true -> "FirstThread"
-			firstThread == false -> "OtherThread"
-			else -> ""
-		}
-		project.addTask<JavaExec>("runJvm$extra", group = GROUP_KORGE) { task ->
-			group = GROUP_KORGE_RUN
-			dependsOn("jvmMainClasses")
-			systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+	project.addTask<KorgeJavaExec>("runJvm", group = GROUP_KORGE) { task ->
+		group = GROUP_KORGE_RUN
+		dependsOn("jvmMainClasses")
+		task.main = korge.realJvmMainClassName
+	}
 
-			val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
-
-			task.doFirst {
-				if (useZgc) {
-					println("Using ZGC")
-				}
-			}
-
-			project.afterEvaluate {
-				val jvmCompilation = gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
-				val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
-
-				task.classpath =
-					mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
-
-				if (firstThread == true) {
-					if (OS.isMac) {
-						task.jvmArgs("-XstartOnFirstThread")
-					}
-				}
-
-				if (useZgc) {
-					task.jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
-				}
-
-				task.main = korge.realJvmMainClassName
+	project.afterEvaluate {
+		for (entry in korge.extraEntryPoints) {
+			project.addTask<KorgeJavaExec>("runJvm${entry.name.capitalize()}", group = GROUP_KORGE) { task ->
+				group = GROUP_KORGE_RUN
+				dependsOn("jvmMainClasses")
+				task.main = entry.jvmMainClassName
 			}
 		}
 	}
@@ -81,6 +56,33 @@ fun Project.configureJvm() {
 
 	addProguard()
 	configureJvmTest()
+}
+
+open class KorgeJavaExec : JavaExec() {
+	init {
+		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+		val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
+
+		doFirst {
+			if (useZgc) {
+				println("Using ZGC")
+			}
+		}
+
+		if (useZgc) {
+			jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
+		}
+		project.afterEvaluate {
+			val jvmCompilation = project.gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
+			val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
+
+			classpath =
+				mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+
+			//if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
+
+		}
+	}
 }
 
 private fun Project.configureJvmTest() {

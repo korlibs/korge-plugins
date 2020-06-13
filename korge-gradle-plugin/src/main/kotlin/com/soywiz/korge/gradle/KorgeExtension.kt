@@ -150,6 +150,16 @@ class KorgeExtension(val project: Project) {
 	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
 	val realJvmMainClassName get() = jvmMainClassName
 
+	val extraEntryPoints = arrayListOf<Entrypoint>()
+
+	class Entrypoint(val name: String, val jvmMainClassName: String) {
+		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+	}
+
+	fun entrypoint(name: String, jvmMainClassName: String) {
+		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
+	}
+
 	var androidMinSdk: String? = null
 	internal var _androidAppendBuildGradle: String? = null
 
