@@ -69,11 +69,11 @@ fun Project.configureNativeDesktop() {
 
 				val text = Indenter {
                     //line("package korge.bootstrap")
-					line("import ${korge.entryPoint}")
+					line("import ${korge.realEntryPoint}")
 					line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
 					line("object RootGameMain") {
 						line("fun runMain() = runMain(arrayOf())")
-						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.entryPoint}() }")
+						line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.realEntryPoint}() }")
 					}
 				}
 				if (!output.exists() || output.readText() != text) output.writeText(text)

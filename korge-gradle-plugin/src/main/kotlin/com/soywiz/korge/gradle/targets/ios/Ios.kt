@@ -20,10 +20,10 @@ fun Project.configureNativeIos() {
 				File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
 					parentFile.mkdirs()
 					writeText("""
-    					import ${korge.entryPoint}
+    					import ${korge.realEntryPoint}
 
 						object RootGameMain {
-							fun runMain() = MyIosGameWindow2.gameWindow.entry { ${korge.entryPoint}() }
+							fun runMain() = MyIosGameWindow2.gameWindow.entry { ${korge.realEntryPoint}() }
 						}
 
 						object MyIosGameWindow2 {

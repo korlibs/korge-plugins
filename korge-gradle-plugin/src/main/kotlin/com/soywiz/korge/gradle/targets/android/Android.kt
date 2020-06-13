@@ -333,7 +333,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 
 			line("import com.soywiz.korio.android.withAndroidContext")
 			line("import com.soywiz.korgw.KorgwActivity")
-			line("import ${korge.entryPoint}")
+			line("import ${korge.realEntryPoint}")
 
 			line("class MainActivity : KorgwActivity()") {
 				line("override suspend fun activityMain()") {
@@ -341,7 +341,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						for (text in korge.plugins.pluginExts.mapNotNull { it.getAndroidInit() }) {
 							line(text)
 						}
-						line("${korge.entryPoint}()")
+						line("${korge.realEntryPoint}()")
 					//}
 				}
 			}

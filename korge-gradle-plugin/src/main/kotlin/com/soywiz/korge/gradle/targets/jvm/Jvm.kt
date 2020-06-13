@@ -67,7 +67,7 @@ fun Project.configureJvm() {
 					task.jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
 				}
 
-				task.main = korge.jvmMainClassName
+				task.main = korge.realJvmMainClassName
 			}
 		}
 	}
@@ -115,9 +115,9 @@ private fun Project.addProguard() {
 			task.manifest { manifest ->
 				manifest.attributes(
 					mapOf(
-						"Implementation-Title" to korge.jvmMainClassName,
+						"Implementation-Title" to korge.realJvmMainClassName,
 						"Implementation-Version" to project.version.toString(),
-						"Main-Class" to korge.jvmMainClassName
+						"Main-Class" to korge.realJvmMainClassName
 					)
 				)
 			}
@@ -164,7 +164,7 @@ private fun Project.addProguard() {
 			task.keepattributes()
 			task.keep("class * implements com.sun.jna.** { *; }")
 			task.keep("class com.sun.jna.** { *; }")
-			task.keep("class ${project.korge.jvmMainClassName} { *; }")
+			task.keep("class ${project.korge.realJvmMainClassName} { *; }")
 			task.keep("class org.jcodec.** { *; }")
 
 			if (runJvm.main?.isNotBlank() == true) {

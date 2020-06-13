@@ -142,10 +142,13 @@ class KorgeExtension(val project: Project) {
 
 	var appleOrganizationName = "User Name Name"
 
-	var entryPoint: String = "main"
+	var entryPoint: String? = null
 	var jvmMainClassName: String = "MainKt"
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
+
+	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+	val realJvmMainClassName get() = jvmMainClassName
 
 	var androidMinSdk: String? = null
 	internal var _androidAppendBuildGradle: String? = null
