@@ -58,7 +58,8 @@ fun Project.configureJavaScript() {
 	for (minimized in listOf(false, true)) {
 		val Min = if (minimized) "Min" else ""
 		// jsWeb, jsWebMin
-		project.addTask<JsWebCopy>(name = "jsWeb$Min", dependsOn = listOf(compileKotlinJs)) { task ->
+
+		project.addTask<JsWebCopy>(name = "jsWeb$Min", dependsOn = listOf(compileKotlinJs, "genResources")) { task ->
 			task.group = GROUP_KORGE_PACKAGE
 			fun CopySpec.configureWeb() {
 				if (minimized) {
@@ -198,7 +199,8 @@ fun Project.configureJavaScript() {
 		dependsOn(jsWebRunNonBlocking)
 	}
 
-	val jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf("jsBrowserWebpack")) { task ->
+	val jsWebMinWebpack = project.addTask<DefaultTask>("jsWebMinWebpack", dependsOn = listOf("jsBrowserWebpack", "genResources")) { task ->
+		group = GROUP_KORGE_PACKAGE
 		val jsFileName = "${project.name}.js"
 		val jsFile = buildDir["distributions"][jsFileName]
 		val jsFileMap = buildDir["distributions"]["$jsFileName.map"]
