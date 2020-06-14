@@ -34,7 +34,9 @@ fun Project.configureJvm() {
 	project.addTask<KorgeJavaExec>("runJvm", group = GROUP_KORGE) { task ->
 		group = GROUP_KORGE_RUN
 		dependsOn("jvmMainClasses")
-		task.main = korge.realJvmMainClassName
+		project.afterEvaluate {
+			task.main = korge.realJvmMainClassName
+		}
 	}
 
 	project.afterEvaluate {
