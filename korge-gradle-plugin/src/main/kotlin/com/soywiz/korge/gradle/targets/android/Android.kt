@@ -299,7 +299,14 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						line(text)
 					}
 
-					line("<activity android:name=\".MainActivity\">")
+					line("<activity android:name=\".MainActivity\"")
+					indent {
+						when (korge.orientation) {
+							Orientation.LANDSCAPE -> line("android:screenOrientation=\"landscape\"")
+							Orientation.PORTRAIT -> line("android:screenOrientation=\"portrait\"")
+						}
+					}
+					line(">")
 
 					if (!korge.androidLibrary) {
 						indent {
