@@ -132,6 +132,7 @@ fun Project.configureNativeAndroid() {
 								line("targetSdkVersion ${korge.androidTargetSdk}")
 								line("versionCode 1")
 								line("versionName '1.0'")
+								line("buildConfigField 'boolean', 'FULLSCREEN', '${korge.fullscreen}'")
 								line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
                                 val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
 								line("manifestPlaceholders = ${if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }")
@@ -286,7 +287,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						line("android:icon=\"@mipmap/icon\"")
 						// // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
 						line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-						line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
+						line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
 					}
 
 
