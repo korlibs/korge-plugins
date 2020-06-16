@@ -160,7 +160,17 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-	var androidMinSdk: String? = null
+	var androidMinSdk: Int = 14
+	var androidCompileSdk: Int = 28
+	var androidTargetSdk: Int = 28
+
+	@JvmOverloads
+	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
+		androidMinSdk = minSdk
+		androidCompileSdk = compileSdk
+		androidTargetSdk = targetSdk
+	}
+
 	internal var _androidAppendBuildGradle: String? = null
 
 	@JvmOverloads
@@ -253,7 +263,6 @@ class KorgeExtension(val project: Project) {
 		// Required to have webgl on android emulator?
 		// https://crosswalk-project.org/documentation/cordova.html
 		// https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview/issues/205#issuecomment-371669478
-		if (androidMinSdk == null) androidMinSdk = "20"
 		cordovaPlugin("cordova-plugin-crosswalk-webview", version = "2.4.0")
 		androidAppendBuildGradle("""
         	configurations.all {

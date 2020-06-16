@@ -119,16 +119,17 @@ fun Project.configureNativeAndroid() {
 								line("exclude '**/*.kotlin_metadata'")
 								line("exclude '**/*.kotlin_builtins'")
                             }
-							line("compileSdkVersion 28")
+							line("compileSdkVersion ${korge.androidCompileSdk}")
 							line("defaultConfig") {
-								line("multiDexEnabled true")
+								if (korge.androidMinSdk < 21)
+									line("multiDexEnabled true")
 
 								if (!korge.androidLibrary) {
 									line("applicationId '$androidPackageName'")
 								}
 
-								line("minSdkVersion 19")
-								line("targetSdkVersion 28")
+								line("minSdkVersion ${korge.androidMinSdk}")
+								line("targetSdkVersion ${korge.androidTargetSdk}")
 								line("versionCode 1")
 								line("versionName '1.0'")
 								line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
@@ -169,7 +170,8 @@ fun Project.configureNativeAndroid() {
 						line("dependencies") {
 							line("implementation fileTree(dir: 'libs', include: ['*.jar'])")
 							line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
-							line("implementation 'com.android.support:multidex:1.0.3'")
+							if (korge.androidMinSdk < 21)
+								line("implementation 'com.android.support:multidex:1.0.3'")
 
 							//line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
 							for ((name, version) in resolvedArtifacts) {
@@ -299,7 +301,14 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						line(text)
 					}
 
-					line("<activity android:name=\".MainActivity\">")
+					line("<activity android:name=\".MainActivity\"")
+					indent {
+						when (korge.orientation) {
+							Orientation.LANDSCAPE -> line("android:screenOrientation=\"landscape\"")
+							Orientation.PORTRAIT -> line("android:screenOrientation=\"portrait\"")
+						}
+					}
+					line(">")
 
 					if (!korge.androidLibrary) {
 						indent {
