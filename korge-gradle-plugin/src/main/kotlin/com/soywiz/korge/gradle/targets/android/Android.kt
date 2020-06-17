@@ -29,9 +29,15 @@ val Project.androidSdkPath: String by lazy {
 
 fun Project.configureNativeAndroid() {
 	val resolvedArtifacts = LinkedHashMap<String, String>()
+	val resolvedModules = LinkedHashMap<String, String>()
 
-	configurations.all {
-		it.resolutionStrategy.eachDependency {
+	val parentProjectName = parent?.name
+	val allModules: Map<String, Project> = parent?.childProjects?.filter { (_, u) ->
+		name != u.name
+	}.orEmpty()
+
+	configurations.all { conf ->
+		conf.resolutionStrategy.eachDependency {
 			val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
 			//println("RESOLVE ARTIFACT: ${it.requested}")
 			//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
@@ -40,6 +46,8 @@ fun Project.configureNativeAndroid() {
 			if (cleanFullName.startsWith("junit:junit")) return@eachDependency
 			if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
 			if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
+			if (it.requested.group == parentProjectName && allModules.contains(it.requested.name))
+				resolvedModules[it.requested.name] = ":${parentProjectName}:${it.requested.name}"
 			resolvedArtifacts[cleanFullName] = it.requested.version.toString()
 		}
 	}
@@ -75,7 +83,19 @@ fun Project.configureNativeAndroid() {
 				File(outputFolder, "local.properties").conditionally(ifNotExists) {
 					ensureParents().writeText("sdk.dir=${androidSdkPath.escape()}")
 				}
-				File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("enableFeaturePreview(\"GRADLE_METADATA\")") }
+				File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
+					ensureParents().writeText(Indenter {
+						line("enableFeaturePreview(\"GRADLE_METADATA\")")
+						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureNativeAndroid.parent?.projectDir?.let {
+							line("include(\":$parentProjectName\")")
+							line("project(\":$parentProjectName\").projectDir = file(\'$it\')")
+							resolvedModules.forEach { (name, path) ->
+								line("include(\"$path\")")
+								line("project(\"$path\").projectDir = file(\'$it/$name\')")
+							}
+						}
+					})
+				}
 				File(
 					outputFolder,
 					"proguard-rules.pro"
@@ -162,14 +182,21 @@ fun Project.configureNativeAndroid() {
 									// @TODO: Use proper source sets of the app
 
 									val projectDir = project.projectDir
-									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/androidMain/kotlin".quoted}]")
-									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/src/androidMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
+									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/jvmMain/kotlin".quoted}]")
+									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
 								}
 							}
 						}
 
 						line("dependencies") {
 							line("implementation fileTree(dir: 'libs', include: ['*.jar'])")
+
+							if (parentProjectName != null) {
+								for ((_, path) in resolvedModules) {
+									line("implementation project(\'$path\')")
+								}
+							}
+
 							line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
 							if (korge.androidMinSdk < 21)
 								line("implementation 'com.android.support:multidex:1.0.3'")
