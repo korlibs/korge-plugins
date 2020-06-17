@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
@@ -28,27 +29,39 @@ val Project.androidSdkPath: String by lazy {
 }
 
 fun Project.configureNativeAndroid() {
-	val resolvedArtifacts = LinkedHashMap<String, String>()
+	val resolvedKorgeArtifacts = LinkedHashMap<String, String>()
+	val resolvedOtherArtifacts = LinkedHashMap<String, String>()
 	val resolvedModules = LinkedHashMap<String, String>()
 
 	val parentProjectName = parent?.name
 	val allModules: Map<String, Project> = parent?.childProjects?.filter { (_, u) ->
 		name != u.name
 	}.orEmpty()
+	val topLevelDependencies = mutableListOf<String>()
 
 	configurations.all { conf ->
-		conf.resolutionStrategy.eachDependency {
-			val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
-			//println("RESOLVE ARTIFACT: ${it.requested}")
-			//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
-			//if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
-			if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
-			if (cleanFullName.startsWith("junit:junit")) return@eachDependency
-			if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
-			if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
-			if (it.requested.group == parentProjectName && allModules.contains(it.requested.name))
-				resolvedModules[it.requested.name] = ":${parentProjectName}:${it.requested.name}"
-			resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+		if (conf.attributes.getAttribute(KotlinPlatformType.attribute)?.name == "jvm") {
+			conf.resolutionStrategy.eachDependency { dep ->
+				if (topLevelDependencies.isEmpty() && !conf.name.removePrefix("jvm").startsWith("Test")) {
+					topLevelDependencies.addAll(conf.incoming.dependencies.map { "${it.group}:${it.name}" })
+				}
+				val cleanFullName = "${dep.requested.group}:${dep.requested.name}"
+				//println("RESOLVE ARTIFACT: ${it.requested}")
+				//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
+				//if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
+				if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
+				if (cleanFullName.startsWith("junit:junit")) return@eachDependency
+				if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
+				if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
+				if (cleanFullName.contains("-metadata")) return@eachDependency
+				if (dep.requested.group == parentProjectName && allModules.contains(dep.requested.name))
+					resolvedModules[dep.requested.name] = ":${parentProjectName}:${dep.requested.name}"
+				else if (cleanFullName.startsWith("com.soywiz.korlibs."))
+					resolvedKorgeArtifacts[cleanFullName.removeSuffix("-jvm")] = dep.requested.version.toString()
+				else if (topLevelDependencies.contains(cleanFullName)) {
+					resolvedOtherArtifacts[cleanFullName] = dep.requested.version.toString()
+				}
+			}
 		}
 	}
 
@@ -202,15 +215,17 @@ fun Project.configureNativeAndroid() {
 								line("implementation 'com.android.support:multidex:1.0.3'")
 
 							//line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
-							for ((name, version) in resolvedArtifacts) {
-								if (name.startsWith("org.jetbrains.kotlin")) continue
-								if (name.contains("-metadata")) continue
+							for ((name, version) in resolvedKorgeArtifacts) {
+//								if (name.startsWith("org.jetbrains.kotlin")) continue
+//								if (name.contains("-metadata")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
-								if (name.startsWith("com.soywiz.korlibs.")) {
-									val rversion = getModuleVersion(name, version)
-                                    line("implementation '$name-android:$rversion'")
-                                }
+								val rversion = getModuleVersion(name, version)
+								line("implementation '$name-android:$rversion'")
+							}
+
+							for ((name, version) in resolvedOtherArtifacts) {
+								line("implementation '$name:$version'")
 							}
 
 							for (dependency in korge.plugins.pluginExts.flatMap { it.getAndroidDependencies() }) {
