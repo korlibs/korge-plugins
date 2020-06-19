@@ -6,6 +6,7 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
@@ -28,19 +29,39 @@ val Project.androidSdkPath: String by lazy {
 }
 
 fun Project.configureNativeAndroid() {
-	val resolvedArtifacts = LinkedHashMap<String, String>()
+	val resolvedKorgeArtifacts = LinkedHashMap<String, String>()
+	val resolvedOtherArtifacts = LinkedHashMap<String, String>()
+	val resolvedModules = LinkedHashMap<String, String>()
 
-	configurations.all {
-		it.resolutionStrategy.eachDependency {
-			val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
-			//println("RESOLVE ARTIFACT: ${it.requested}")
-			//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
-			//if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
-			if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
-			if (cleanFullName.startsWith("junit:junit")) return@eachDependency
-			if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
-			if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
-			resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+	val parentProjectName = parent?.name
+	val allModules: Map<String, Project> = parent?.childProjects?.filter { (_, u) ->
+		name != u.name
+	}.orEmpty()
+	val topLevelDependencies = mutableListOf<String>()
+
+	configurations.all { conf ->
+		if (conf.attributes.getAttribute(KotlinPlatformType.attribute)?.name == "jvm") {
+			conf.resolutionStrategy.eachDependency { dep ->
+				if (topLevelDependencies.isEmpty() && !conf.name.removePrefix("jvm").startsWith("Test")) {
+					topLevelDependencies.addAll(conf.incoming.dependencies.map { "${it.group}:${it.name}" })
+				}
+				val cleanFullName = "${dep.requested.group}:${dep.requested.name}"
+				//println("RESOLVE ARTIFACT: ${it.requested}")
+				//if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
+				//if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
+				if (cleanFullName.startsWith("org.jetbrains")) return@eachDependency
+				if (cleanFullName.startsWith("junit:junit")) return@eachDependency
+				if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return@eachDependency
+				if (cleanFullName.startsWith("org.jogamp")) return@eachDependency
+				if (cleanFullName.contains("-metadata")) return@eachDependency
+				if (dep.requested.group == parentProjectName && allModules.contains(dep.requested.name))
+					resolvedModules[dep.requested.name] = ":${parentProjectName}:${dep.requested.name}"
+				else if (cleanFullName.startsWith("com.soywiz.korlibs."))
+					resolvedKorgeArtifacts[cleanFullName.removeSuffix("-jvm")] = dep.requested.version.toString()
+				else if (topLevelDependencies.contains(cleanFullName)) {
+					resolvedOtherArtifacts[cleanFullName] = dep.requested.version.toString()
+				}
+			}
 		}
 	}
 
@@ -75,7 +96,19 @@ fun Project.configureNativeAndroid() {
 				File(outputFolder, "local.properties").conditionally(ifNotExists) {
 					ensureParents().writeText("sdk.dir=${androidSdkPath.escape()}")
 				}
-				File(outputFolder, "settings.gradle").conditionally(ifNotExists) { ensureParents().writeText("enableFeaturePreview(\"GRADLE_METADATA\")") }
+				File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
+					ensureParents().writeText(Indenter {
+						line("enableFeaturePreview(\"GRADLE_METADATA\")")
+						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureNativeAndroid.parent?.projectDir?.let {
+							line("include(\":$parentProjectName\")")
+							line("project(\":$parentProjectName\").projectDir = file(\'$it\')")
+							resolvedModules.forEach { (name, path) ->
+								line("include(\"$path\")")
+								line("project(\"$path\").projectDir = file(\'$it/$name\')")
+							}
+						}
+					})
+				}
 				File(
 					outputFolder,
 					"proguard-rules.pro"
@@ -132,6 +165,7 @@ fun Project.configureNativeAndroid() {
 								line("targetSdkVersion ${korge.androidTargetSdk}")
 								line("versionCode 1")
 								line("versionName '1.0'")
+//								line("buildConfigField 'boolean', 'FULLSCREEN', '${korge.fullscreen}'")
 								line("testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'")
                                 val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
 								line("manifestPlaceholders = ${if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }")
@@ -161,28 +195,37 @@ fun Project.configureNativeAndroid() {
 									// @TODO: Use proper source sets of the app
 
 									val projectDir = project.projectDir
-									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/androidMain/kotlin".quoted}]")
-									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/src/androidMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
+									line("java.srcDirs += [${"$projectDir/src/commonMain/kotlin".quoted}, ${"$projectDir/src/jvmMain/kotlin".quoted}]")
+									line("assets.srcDirs += [${"$projectDir/src/commonMain/resources".quoted}, ${"$projectDir/build/genMainResources".quoted}]")
 								}
 							}
 						}
 
 						line("dependencies") {
 							line("implementation fileTree(dir: 'libs', include: ['*.jar'])")
+
+							if (parentProjectName != null) {
+								for ((_, path) in resolvedModules) {
+									line("implementation project(\'$path\')")
+								}
+							}
+
 							line("implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion'")
 							if (korge.androidMinSdk < 21)
 								line("implementation 'com.android.support:multidex:1.0.3'")
 
 							//line("api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion'")
-							for ((name, version) in resolvedArtifacts) {
-								if (name.startsWith("org.jetbrains.kotlin")) continue
-								if (name.contains("-metadata")) continue
+							for ((name, version) in resolvedKorgeArtifacts) {
+//								if (name.startsWith("org.jetbrains.kotlin")) continue
+//								if (name.contains("-metadata")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.krypto:krypto")) continue
                                 //if (name.startsWith("com.soywiz.korlibs.korge:korge")) {
-								if (name.startsWith("com.soywiz.korlibs.")) {
-									val rversion = getModuleVersion(name, version)
-                                    line("implementation '$name-android:$rversion'")
-                                }
+								val rversion = getModuleVersion(name, version)
+								line("implementation '$name-android:$rversion'")
+							}
+
+							for ((name, version) in resolvedOtherArtifacts) {
+								line("implementation '$name:$version'")
 							}
 
 							for (dependency in korge.plugins.pluginExts.flatMap { it.getAndroidDependencies() }) {
@@ -286,7 +329,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension) {
 						line("android:icon=\"@mipmap/icon\"")
 						// // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
 						line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-						line("android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"")
+						line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
 					}
 
 

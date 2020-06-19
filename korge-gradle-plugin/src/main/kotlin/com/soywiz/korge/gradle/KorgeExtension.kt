@@ -160,7 +160,7 @@ class KorgeExtension(val project: Project) {
 		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
 	}
 
-	var androidMinSdk: Int = 14
+	var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 28
 	var androidTargetSdk: Int = 28
 
