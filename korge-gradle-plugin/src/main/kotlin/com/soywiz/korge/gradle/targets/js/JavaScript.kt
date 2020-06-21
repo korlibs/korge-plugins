@@ -7,7 +7,6 @@ import groovy.text.*
 import org.gradle.*
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
@@ -245,17 +244,26 @@ private val excludesJs = arrayOf("**/*.js")
 private val excludesAll = excludesNormal + excludesJs
 
 private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String? = null) {
-	val indexHtmlTemplateFile = "index.v2.template.html"
 	val kotlinJsCompile = tasks.getByName("compileKotlinJs") as Kotlin2JsCompile
-	val indexTemplateHtml = when {
-		targetDir[indexHtmlTemplateFile].exists() -> targetDir[indexHtmlTemplateFile].readText()
-		else -> getResourceBytes(indexHtmlTemplateFile).toString(Charsets.UTF_8)
+
+	fun readTextFile(name: String): String {
+		return when {
+			targetDir[name].exists() -> targetDir[name].readText()
+			else -> getResourceBytes(name).toString(Charsets.UTF_8)
+		}
 	}
+
+	val indexTemplateHtml = readTextFile("index.v2.template.html")
+	val customCss = readTextFile("custom-styles.template.css")
+	val customHtml = readTextFile("custom-html-head.template.html")
+
 	targetDir["index.html"].writeText(
 		SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
 			mapOf(
 				"OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
-				"TITLE" to korge.name
+				"TITLE" to korge.name,
+				"CUSTOM_CSS" to customCss,
+				"CUSTOM_HTML" to customHtml,
 			)
 		).toString().let {
 			if (webpackFile != null) it.fixIndexHtmlWebpack(webpackFile) else it
