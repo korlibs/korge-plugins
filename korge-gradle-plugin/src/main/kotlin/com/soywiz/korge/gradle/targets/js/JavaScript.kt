@@ -277,9 +277,11 @@ private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String?
 }
 
 private fun String.fixIndexHtmlWebpack(bundleJs: String = "bundle.js"): String {
+	val PREFIX = "<!-- GAME_LOAD -->"
+	val SUFFIX = "<!-- /GAME_LOAD -->"
 	return replace(
-		Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"),
-		"<script src=\"$bundleJs\" type=\"text/javascript\"></script>"
+		Regex("$PREFIX.*$SUFFIX", RegexOption.DOT_MATCHES_ALL),
+		"$PREFIX<script type='text/javascript'>document.onreadystatechange = () => { if (document.readyState === 'complete') { preloader_complete() } };</script><script src='$bundleJs' type='text/javascript'></script>$SUFFIX"
 	)
 }
 
