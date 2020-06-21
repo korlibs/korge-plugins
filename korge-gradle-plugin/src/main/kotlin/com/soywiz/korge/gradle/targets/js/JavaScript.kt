@@ -255,7 +255,8 @@ private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String?
 
 	val indexTemplateHtml = readTextFile("index.v2.template.html")
 	val customCss = readTextFile("custom-styles.template.css")
-	val customHtml = readTextFile("custom-html-head.template.html")
+	val customHtmlHead = readTextFile("custom-html-head.template.html")
+	val customHtmlBody = readTextFile("custom-html-body.template.html")
 
 	targetDir["index.html"].writeText(
 		SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
@@ -263,7 +264,8 @@ private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String?
 				"OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
 				"TITLE" to korge.name,
 				"CUSTOM_CSS" to customCss,
-				"CUSTOM_HTML" to customHtml
+				"CUSTOM_HTML_HEAD" to customHtmlHead,
+				"CUSTOM_HTML_BODY" to customHtmlBody
 			)
 		).toString().let {
 			if (webpackFile != null) it.fixIndexHtmlWebpack(webpackFile) else it
