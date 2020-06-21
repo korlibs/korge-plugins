@@ -263,7 +263,7 @@ private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String?
 				"OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
 				"TITLE" to korge.name,
 				"CUSTOM_CSS" to customCss,
-				"CUSTOM_HTML" to customHtml,
+				"CUSTOM_HTML" to customHtml
 			)
 		).toString().let {
 			if (webpackFile != null) it.fixIndexHtmlWebpack(webpackFile) else it
