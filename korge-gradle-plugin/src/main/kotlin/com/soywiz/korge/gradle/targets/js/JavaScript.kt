@@ -7,7 +7,6 @@ import groovy.text.*
 import org.gradle.*
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
@@ -245,17 +244,28 @@ private val excludesJs = arrayOf("**/*.js")
 private val excludesAll = excludesNormal + excludesJs
 
 private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String? = null) {
-	val indexHtmlTemplateFile = "index.v2.template.html"
 	val kotlinJsCompile = tasks.getByName("compileKotlinJs") as Kotlin2JsCompile
-	val indexTemplateHtml = when {
-		targetDir[indexHtmlTemplateFile].exists() -> targetDir[indexHtmlTemplateFile].readText()
-		else -> getResourceBytes(indexHtmlTemplateFile).toString(Charsets.UTF_8)
+
+	fun readTextFile(name: String): String {
+		return when {
+			targetDir[name].exists() -> targetDir[name].readText()
+			else -> getResourceBytes(name).toString(Charsets.UTF_8)
+		}
 	}
+
+	val indexTemplateHtml = readTextFile("index.v2.template.html")
+	val customCss = readTextFile("custom-styles.template.css")
+	val customHtmlHead = readTextFile("custom-html-head.template.html")
+	val customHtmlBody = readTextFile("custom-html-body.template.html")
+
 	targetDir["index.html"].writeText(
 		SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
 			mapOf(
 				"OUTPUT" to kotlinJsCompile.outputFile.nameWithoutExtension,
-				"TITLE" to korge.name
+				"TITLE" to korge.name,
+				"CUSTOM_CSS" to customCss,
+				"CUSTOM_HTML_HEAD" to customHtmlHead,
+				"CUSTOM_HTML_BODY" to customHtmlBody
 			)
 		).toString().let {
 			if (webpackFile != null) it.fixIndexHtmlWebpack(webpackFile) else it
@@ -267,9 +277,11 @@ private fun Project.writeTemplateIndexHtml(targetDir: File, webpackFile: String?
 }
 
 private fun String.fixIndexHtmlWebpack(bundleJs: String = "bundle.js"): String {
+	val PREFIX = "<!-- GAME_LOAD -->"
+	val SUFFIX = "<!-- /GAME_LOAD -->"
 	return replace(
-		Regex("<script data-main=\"(.*?)\" src=\"require.min.js\" type=\"text/javascript\"></script>"),
-		"<script src=\"$bundleJs\" type=\"text/javascript\"></script>"
+		Regex("$PREFIX.*$SUFFIX", RegexOption.DOT_MATCHES_ALL),
+		"$PREFIX<script type='text/javascript'>document.onreadystatechange = () => { if (document.readyState === 'complete') { preloader_complete() } };</script><script src='$bundleJs' type='text/javascript'></script>$SUFFIX"
 	)
 }
 
