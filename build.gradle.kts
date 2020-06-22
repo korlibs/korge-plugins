@@ -85,7 +85,7 @@ object BuildVersions {
 """)
 
 val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
-val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayApiKey") ?: System.getenv("BINTRAY_API_KEY"))?.toString()
+val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayKey") ?: System.getenv("BINTRAY_KEY"))?.toString()
 
 subprojects {
 	repositories {
