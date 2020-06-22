@@ -29,7 +29,7 @@ val isKotlinDev = kotlinVersion.contains("-release")
 
 allprojects {
     val forcedVersion = System.getenv("FORCED_KORGE_PLUGINS_VERSION")
-    project.version = forcedVersion?.removePrefix("v") ?: project.version
+    project.version = forcedVersion?.removePrefix("refs/tags/v")?.removePrefix("v") ?: project.version
 
     //println(project.version)
 	repositories {
