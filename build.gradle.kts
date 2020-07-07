@@ -5,10 +5,12 @@ import java.io.*
 buildscript {
 	val kotlinVersion: String by project
 	val isKotlinDev = kotlinVersion.contains("-release")
+    val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
 	repositories {
 		mavenLocal()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-		if (isKotlinDev) {
+		if (isKotlinDev || isKotlinEap) {
+            maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
 			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 		}
 	}
@@ -26,6 +28,7 @@ plugins {
 
 val kotlinVersion: String by project
 val isKotlinDev = kotlinVersion.contains("-release")
+val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
 
 allprojects {
     val forcedVersion = System.getenv("FORCED_KORGE_PLUGINS_VERSION")
@@ -54,7 +57,8 @@ allprojects {
 				excludeGroup("Kotlin/Native")
 			}
 		}
-		if (isKotlinDev) {
+		if (isKotlinDev || isKotlinEap) {
+            maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
 			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 		}
 	}
