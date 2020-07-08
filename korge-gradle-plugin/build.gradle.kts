@@ -21,6 +21,12 @@ gradlePlugin {
 			description = "Multiplatform Game Engine for Kotlin"
 			implementationClass = "com.soywiz.korge.gradle.KorgeGradlePlugin"
 		}
+        create("korge-android") {
+            id = "com.soywiz.korge.android"
+            displayName = "KorgeAndroid"
+            description = "Multiplatform Game Engine for Kotlin with integrated android support"
+            implementationClass = "com.soywiz.korge.gradle.KorgeWithAndroidGradlePlugin"
+        }
 	}
 }
 
@@ -32,12 +38,14 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
 }
 
 val kotlinVersion: String by project
+val androidBuildGradleVersion: String by project
 
 dependencies {
 	implementation(project(":korge-build"))
 
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 	implementation("net.sf.proguard:proguard-gradle:6.2.2")
+    implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
 
 	implementation(gradleApi())
 	implementation(localGroovy())
