@@ -1,31 +1,41 @@
 package com.soywiz.korge.gradle.targets.android
 
+import com.soywiz.kds.WeakPropertyThis
 import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.GROUP_KORGE_INSTALL
+import com.soywiz.korge.gradle.targets.GROUP_KORGE_RUN
+import com.soywiz.korge.gradle.targets.getIconBytes
+import com.soywiz.korge.gradle.targets.getResourceBytes
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.GradleBuild
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import java.io.File
+import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.iterator
-import kotlin.collections.listOf
 import kotlin.collections.set
 
 //Linux: ~/Android/Sdk
 //Mac: ~/Library/Android/sdk
 //Windows: %LOCALAPPDATA%\Android\sdk
-val Project.androidSdkPath: String by lazy {
-	val userHome = System.getProperty("user.home")
-	listOfNotNull(
-		System.getenv("ANDROID_HOME"),
-		"$userHome/AppData/Local/Android/sdk",
-		"$userHome/Library/Android/sdk",
-		"$userHome/Android/Sdk"
-	).firstOrNull { File(it).exists() } ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
+val Project.androidSdkPath by WeakPropertyThis<Project, String> {
+    val localPropertiesFile = projectDir["local.properties"]
+    if (localPropertiesFile.exists()) {
+        val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
+        if (props.getProperty("sdk.dir") != null) {
+            return@WeakPropertyThis props.getProperty("sdk.dir")!!
+        }
+    }
+    val userHome = System.getProperty("user.home")
+    listOfNotNull(
+        System.getenv("ANDROID_HOME"),
+        "$userHome/AppData/Local/Android/sdk",
+        "$userHome/Library/Android/sdk",
+        "$userHome/Android/Sdk"
+    ).firstOrNull { File(it).exists() } ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
 }
 
 fun Project.configureNativeAndroid() {
