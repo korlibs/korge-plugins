@@ -6,7 +6,7 @@ object BuildVersions {
 	const val KDS = "1.10.13"
 	const val KMEM = "1.10.7"
 	const val KORMA = "1.11.21"
-	const val KORIO = "1.11.12"
+	const val KORIO = "1.11.13"
 	const val KORIM = "1.12.29"
 	const val KORAU = "1.11.10"
 	const val KORGW = "1.12.25"
