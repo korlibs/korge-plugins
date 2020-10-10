@@ -118,7 +118,7 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 					}
 				}
 
-				for (dependency in korge.plugins.pluginExts.flatMap { it.getAndroidDependencies() }) {
+				for (dependency in korge.plugins.pluginExts.getAndroidDependencies()) {
 					add("implementation", dependency)
 				}
 			}

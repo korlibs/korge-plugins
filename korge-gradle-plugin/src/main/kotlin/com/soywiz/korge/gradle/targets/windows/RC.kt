@@ -1,36 +1,42 @@
 package com.soywiz.korge.gradle.targets.windows
 
 import com.soywiz.korge.gradle.KorgeExtension
-import com.soywiz.korio.util.*
 import java.io.*
+import com.soywiz.korge.gradle.util.*
 
 object WindowsRC {
-    fun generate(info: KorgeExtension): String = Indenter.genString {
-        line("1000 ICON \"icon.ico\"")
-        line("")
-        line("1 VERSIONINFO")
-        line("FILEVERSION     1,0,0,0")
-        line("PRODUCTVERSION  1,0,0,0")
-        line("BEGIN")
-        line("  BLOCK \"StringFileInfo\"")
-        line("  BEGIN")
-        line("    BLOCK \"080904E4\"")
-        line("    BEGIN")
-        line("      VALUE \"CompanyName\", ${info.authorName.quoted}")
-        line("      VALUE \"FileDescription\", ${info.description.quoted}")
-        line("      VALUE \"FileVersion\", ${info.version.quoted}")
-        line("      VALUE \"FileVersion\", ${info.version.quoted}")
-        line("      VALUE \"InternalName\", ${info.name.quoted}")
-        line("      VALUE \"LegalCopyright\", ${info.copyright.quoted}")
-        line("      VALUE \"OriginalFilename\", ${info.exeBaseName.quoted}")
-        line("      VALUE \"ProductName\", ${info.name.quoted}")
-        line("      VALUE \"ProductVersion\", ${info.version.quoted}")
-        line("    END")
-        line("  END")
-        line("  BLOCK \"VarFileInfo\"")
-        line("  BEGIN")
-        line("    VALUE \"Translation\", 0x809, 1252")
-        line("  END")
-        line("END")
+    fun generate(info: KorgeExtension): String = kotlin.text.buildString {
+        appendLine("1000 ICON \"icon.ico\"")
+        appendLine("")
+        appendLine("1 VERSIONINFO")
+        appendLine("FILEVERSION     1,0,0,0")
+        appendLine("PRODUCTVERSION  1,0,0,0")
+        appendLine("BEGIN")
+        appendLine("  BLOCK \"StringFileInfo\"")
+        appendLine("  BEGIN")
+        appendLine("    BLOCK \"080904E4\"")
+        appendLine("    BEGIN")
+        appendLine("      VALUE \"CompanyName\", ${info.authorName.quoted}")
+        appendLine("      VALUE \"FileDescription\", ${info.description.quoted}")
+        appendLine("      VALUE \"FileVersion\", ${info.version.quoted}")
+        appendLine("      VALUE \"FileVersion\", ${info.version.quoted}")
+        appendLine("      VALUE \"InternalName\", ${info.name.quoted}")
+        appendLine("      VALUE \"LegalCopyright\", ${info.copyright.quoted}")
+        appendLine("      VALUE \"OriginalFilename\", ${info.exeBaseName.quoted}")
+        appendLine("      VALUE \"ProductName\", ${info.name.quoted}")
+        appendLine("      VALUE \"ProductVersion\", ${info.version.quoted}")
+        appendLine("    END")
+        appendLine("  END")
+        appendLine("  BLOCK \"VarFileInfo\"")
+        appendLine("  BEGIN")
+        appendLine("    VALUE \"Translation\", 0x809, 1252")
+        appendLine("  END")
+        appendLine("END")
     }
+}
+
+private fun StringBuilder.appendLine(value: String?): StringBuilder {
+    if (value != null) append(value)
+    append('\n')
+    return this
 }

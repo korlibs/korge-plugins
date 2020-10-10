@@ -7,15 +7,9 @@ import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
-import com.soywiz.korim.format.ImageData
-import com.soywiz.korim.format.ImageFrame
-import com.soywiz.korim.format.PNG
-import groovy.time.BaseDuration
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
 private val RELEASE = NativeBuildType.RELEASE
@@ -82,7 +76,7 @@ fun Project.configureNativeDesktop() {
 	}
 
 	afterEvaluate {
-		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosArm32())) {
+		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {
 
 		for (target in when {
 			isWindows -> listOf(kotlin.mingwX64())
@@ -163,10 +157,10 @@ private fun Project.addNativeRun() {
 						val appIcoFile = buildDir["icon.ico"]
 
 						doLast {
-							val bmp32 = PNG.decode(project.korge.getIconBytes(32))
-							val bmp256 = PNG.decode(project.korge.getIconBytes(256))
+							val bmp32 = project.korge.getIconBytes(32).decodeImage()
+							val bmp256 = project.korge.getIconBytes(256).decodeImage()
 
-							appIcoFile.writeBytes(ICO2.encode(ImageData(listOf(ImageFrame(bmp32), ImageFrame(bmp256)))))
+							appIcoFile.writeBytes(ICO2.encode(listOf(bmp32, bmp256)))
 							appRcFile.writeText(WindowsRC.generate(korge))
 							project.compileWindowsRC(appRcFile, appRcObjFile)
 

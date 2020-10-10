@@ -32,21 +32,25 @@ gradlePlugin {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
-        //jvmTarget = "1.8"
-		jvmTarget = "1.6"
+        jvmTarget = "1.8"
+		//jvmTarget = "1.6"
     }
 }
 
-val kotlinVersion: String by project
+//val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
 
 dependencies {
-	implementation(project(":korge-build"))
+    //implementation(project(":korge-build"))
+    implementation(kotlin("gradle-plugin"))
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
+    //testImplementation("junit:junit:4.12")
 
-	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-	implementation("net.sf.proguard:proguard-gradle:6.2.2")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    implementation("net.sf.proguard:proguard-gradle:6.2.2")
     implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
 
-	implementation(gradleApi())
-	implementation(localGroovy())
+    implementation(gradleApi())
+    implementation(localGroovy())
 }

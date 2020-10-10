@@ -1,7 +1,6 @@
 package com.soywiz.korge.gradle.targets.windows
 
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korio.file.std.*
 import org.gradle.api.*
 import java.io.*
 import com.soywiz.korge.gradle.util.get

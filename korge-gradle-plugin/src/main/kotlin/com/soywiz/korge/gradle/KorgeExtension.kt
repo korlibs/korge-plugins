@@ -1,9 +1,7 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.kds.*
 import com.soywiz.korge.gradle.targets.desktop.DESKTOP_NATIVE_TARGETS
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korge.plugin.*
 import com.sun.net.httpserver.*
 import org.gradle.api.*
 import java.io.*
@@ -11,13 +9,12 @@ import groovy.text.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
+import java.time.*
 import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.reflect.*
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
-
-data class KorgeCordovaPluginDescriptor(val name: String, val args: Map<String, String>, val version: String?)
 
 class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLoader = KorgePluginsContainer::class.java.classLoader) {
     val globalParams = LinkedHashMap<String, String>()
@@ -30,25 +27,14 @@ class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLo
 		URLClassLoader(urls.toTypedArray(), parentClassLoader)
 	}
 
-	val pluginExts: List<KorgePluginExtension> by lazy {
-        val exts = ServiceLoader.load(KorgePluginExtension::class.java, classLoader).toList()
-		val ctx = KorgePluginExtension.InitContext()
-        for (ext in exts) {
-            for (param in ext.params) {
-				@Suppress("UNCHECKED_CAST")
-				(param as KMutableProperty1<KorgePluginExtension, String>).set(ext, globalParams[param.name]!!)
-            }
-			ext.init(ctx)
-        }
-        exts
-    }
+    val pluginExts = KorgePluginExtensions()
 
 	fun addPlugin(artifact: MavenLocation): KorgePluginDescriptor {
 		return plugins.getOrPut(artifact) { KorgePluginDescriptor(this, artifact) }
 	}
 }
 
-data class KorgePluginDescriptor(val container: KorgePluginsContainer, val artifact: MavenLocation, val args: LinkedHashMap<String, String> = linkedHashMapOf()) {
+data class KorgePluginDescriptor(val container: KorgePluginsContainer, val artifact: MavenLocation, val args: LinkedHashMap<String, String> = LinkedHashMap()) {
 	val jvmArtifact = artifact.withNameSuffix("-jvm")
     val files by lazy { container.project.resolveArtifacts(jvmArtifact) }
     val urls by lazy { files.map { it.toURI().toURL() } }
@@ -100,11 +86,11 @@ class KorgeExtension(val project: Project) {
 		// Do nothing, but serves to be referenced to be installed
 	}
 
-	//var jvmTarget: String = project.findProject("jvm.target") ?: "1.8"
-	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: "1.6"
+    val DEFAULT_JVM_TARGET = "1.8"
+    //val DEFAULT_JVM_TARGET = "1.6"
+	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
-	var enableCordovaTargets: Boolean = project.findProperty("enable.cordova.targets") == "true"
     var id: String = "com.unknown.unknownapp"
 	var version: String = "0.0.1"
 
@@ -113,9 +99,8 @@ class KorgeExtension(val project: Project) {
 	var name: String = "unnamed"
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
-	val cordovaPlugins = arrayListOf<KorgeCordovaPluginDescriptor>()
 
-	var copyright: String = "Copyright (c) 2019 Unknown"
+	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
 
 	var supressWarnings: Boolean = false
 
@@ -126,6 +111,7 @@ class KorgeExtension(val project: Project) {
 	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
 
 	var icon: File? = project.projectDir["icon.png"]
+    var banner: File? = project.projectDir["banner.png"]
 
 	var gameCategory: GameCategory? = null
 
@@ -164,7 +150,6 @@ class KorgeExtension(val project: Project) {
 	var androidCompileSdk: Int = 28
 	var androidTargetSdk: Int = 28
 
-	@JvmOverloads
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk
 		androidCompileSdk = compileSdk
@@ -172,13 +157,6 @@ class KorgeExtension(val project: Project) {
 	}
 
 	internal var _androidAppendBuildGradle: String? = null
-
-	@JvmOverloads
-	fun cordovaPlugin(name: CharSequence, args: Map<String, String> = mapOf(), version: CharSequence? = null) {
-		project.logger.info("Korge.cordovaPlugin(name=$name, args=$args, version=$version)")
-		cordovaPlugins += KorgeCordovaPluginDescriptor(name.toString(), args, version?.toString())
-		//println("cordovaPlugin($name, $args, $version)")
-	}
 
 	fun androidAppendBuildGradle(str: String) {
 		if (_androidAppendBuildGradle == null) {
@@ -244,37 +222,19 @@ class KorgeExtension(val project: Project) {
 		dependencyMulti("com.soywiz.korlibs.korge:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
-	fun supportMp3() = Unit
-	fun supportOggVorbis() = Unit
-
-	fun supportQr() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-qr:${BuildVersions.KORIM}", registerPlugin = false)
-	}
-
-	fun supportJpeg() {
-		dependencyMulti("com.soywiz.korlibs.korim:korim-jpeg:${BuildVersions.KORIM}", registerPlugin = false)
-	}
-
 	fun admob(ADMOB_APP_ID: String) {
         plugin("com.soywiz.korlibs.korge:korge-admob:${project.korgeVersion}", mapOf("ADMOB_APP_ID" to ADMOB_APP_ID))
     }
 
-	fun cordovaUseCrosswalk() {
-		// Required to have webgl on android emulator?
-		// https://crosswalk-project.org/documentation/cordova.html
-		// https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview/issues/205#issuecomment-371669478
-		cordovaPlugin("cordova-plugin-crosswalk-webview", version = "2.4.0")
-		androidAppendBuildGradle("""
-        	configurations.all {
-        		resolutionStrategy {
-        			force 'com.android.support:support-v4:27.1.0'
-        		}
-        	}
-        """)
-	}
+    fun gameServices() {
+        plugin("com.soywiz.korlibs.korge:korge-services:${project.korgeVersion}")
+    }
 
-	@JvmOverloads
-	fun author(name: String, email: String, href: String) {
+    fun billing() {
+        plugin("com.soywiz.korlibs.korge:korge-billing:${project.korgeVersion}")
+    }
+
+    fun author(name: String, email: String, href: String) {
 		authorName = name
 		authorEmail = email
 		authorHref = href
@@ -291,7 +251,7 @@ class KorgeExtension(val project: Project) {
 		}
 	}
 
-	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosArm32", "iosX64") + DESKTOP_NATIVE_TARGETS
+	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosX64") + DESKTOP_NATIVE_TARGETS
 	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 	val ALL_TARGETS = listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 
@@ -330,7 +290,6 @@ class KorgeExtension(val project: Project) {
 	val cinterops = arrayListOf<CInteropTargets>()
 
 
-	@JvmOverloads
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {

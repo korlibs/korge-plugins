@@ -3,16 +3,12 @@ package com.soywiz.korge.gradle.targets.jvm
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
-import com.soywiz.korio.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.api.internal.FactoryNamedDomainObjectContainer
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
-import org.gradle.jvm.tasks.*
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.gradle.*
 
@@ -61,30 +57,33 @@ fun Project.configureJvm() {
 }
 
 open class KorgeJavaExec : JavaExec() {
-	init {
-		systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
-		val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
+    private val jvmCompilation by lazy { project.kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*> }
+    private val mainJvmCompilation by lazy { jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation }
 
-		doFirst {
-			if (useZgc) {
-				println("Using ZGC")
-			}
-		}
+    @get:InputFiles
+    val korgeClassPath by lazy {
+        mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+    }
 
-		if (useZgc) {
-			jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
-		}
-		project.afterEvaluate {
-			val jvmCompilation = project.gkotlin.targets["jvm"]["compilations"] as NamedDomainObjectSet<*>
-			val mainJvmCompilation = jvmCompilation["main"] as KotlinJvmCompilation
+    init {
+        systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+        // https://github.com/korlibs/korge-plugins/issues/25
+        val useZgc = ((System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14) && (System.getenv("JVM_USE_ZGC") != "false")
 
-			classpath =
-				mainJvmCompilation.runtimeDependencyFiles + mainJvmCompilation.compileDependencyFiles + mainJvmCompilation.output.allOutputs + mainJvmCompilation.output.classesDirs
+        doFirst {
+            if (useZgc) {
+                println("Using ZGC")
+            }
+        }
 
-			//if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
-
-		}
-	}
+        if (useZgc) {
+            jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
+        }
+        project.afterEvaluate {
+            //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
+            classpath = korgeClassPath
+        }
+    }
 }
 
 private fun Project.configureJvmTest() {
