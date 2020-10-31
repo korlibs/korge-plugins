@@ -2,6 +2,7 @@ package com.soywiz.korge.gradle.targets.js
 
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
 import groovy.text.*
 import org.gradle.*
@@ -74,6 +75,15 @@ fun Project.configureJavaScript() {
             val customHtmlBody = readTextFile("custom-html-body.template.html")
 
             //println(File(targetDir, "index.html"))
+
+            try {
+
+                File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {
+                    project.korge.getIconBytes(it).decodeImage()
+                }))
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
 
             File(targetDir, "index.html").writeText(
                 groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
