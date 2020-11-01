@@ -13,6 +13,7 @@ val Project.korimVersion get() = findProperty("korimVersion") ?: BuildVersions.K
 //val Project.korevVersion get() = findProperty("korevVersion") ?: BuildVersions.KOREV
 val Project.korgwVersion get() = findProperty("korgwVersion") ?: BuildVersions.KORGW
 val Project.korgeVersion get() = findProperty("korgeVersion") ?: BuildVersions.KORGE
+val Project.jnaVersion get() = findProperty("jnaVersion") ?: BuildVersions.JNA
 val Project.kotlinVersion get() = findProperty("kotlinVersion") ?: BuildVersions.KOTLIN
 val Project.androidBuildGradleVersion get() = findProperty("androidBuildGradleVersion") ?: BuildVersions.ANDROID_BUILD
 val Project.coroutinesVersion get() = findProperty("coroutinesVersion") ?: BuildVersions.COROUTINES
@@ -22,6 +23,7 @@ fun Project.getModuleVersion(name: String, defaultVersion: Any): Any {
 		"klock" -> klockVersion
 		"kmem" -> kmemVersion
 		"kds" -> kdsVersion
+        "jna" -> jnaVersion
 		"korio" -> korioVersion
 		"korma" -> kormaVersion
 		"korau" -> korauVersion

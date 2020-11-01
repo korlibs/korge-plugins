@@ -83,6 +83,7 @@ object BuildVersions {
 	const val KORGW = "${version("korgw")}"
 	const val KORGE = "${version("korge")}"
 	const val KOTLIN = "${version("kotlin")}"
+    const val JNA = "${version("jna")}"
 	const val COROUTINES = "${version("coroutines")}"
 	const val ANDROID_BUILD = "${version("androidBuildGradle")}"
 }

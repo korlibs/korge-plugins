@@ -80,15 +80,17 @@ class KorgeGradleApply(val project: Project) {
 
 	private fun Project.configureDependencies() {
 		dependencies {
+            add("jvmMainApi", "net.java.dev.jna:jna:${jnaVersion}")
+            add("jvmMainApi", "net.java.dev.jna:jna-platform:${jnaVersion}")
 			add("commonMainApi", "com.soywiz.korlibs.korge:korge:${korgeVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
+			add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
 		}
 	}
 
