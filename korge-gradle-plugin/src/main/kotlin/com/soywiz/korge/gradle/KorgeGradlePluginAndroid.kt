@@ -48,7 +48,6 @@ open class KorgeWithAndroidGradlePlugin : Plugin<Project> {
 				it.exclude("META-INF/NOTICE")
 				it.exclude("META-INF/NOTICE.txt")
 				it.exclude("META-INF/notice.txt")
-                it.exclude("META-INF/*.kotlin_module")
 				it.exclude("META-INF/LGPL*")
 				it.exclude("META-INF/AL2.0")
 				it.exclude("META-INF/*.kotlin_module")
