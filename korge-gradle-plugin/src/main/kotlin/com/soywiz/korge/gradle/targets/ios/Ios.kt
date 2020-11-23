@@ -36,8 +36,10 @@ fun Project.configureNativeIos() {
 		}
 	}
 
+    val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64())
+
 	kotlin.apply {
-		for (target in listOf(iosX64(), iosArm64())) {
+		for (target in iosTargets) {
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
@@ -90,8 +92,10 @@ fun Project.configureNativeIos() {
 
 	val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
 	val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
-		dependsOn("genResources")
-		from(File(buildDir, "genMainResources"))
+        val targetName = "iosX64" // @TODO: Should be one per target?
+        val compilationName = "main"
+		dependsOn(getKorgeProcessResourcesTaskName(targetName, compilationName))
+		from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
 		from(File(rootDir, "src/commonMain/resources"))
 		into(combinedResourcesFolder)
 		doFirst {
@@ -760,7 +764,14 @@ fun Project.configureNativeIos() {
 		task.onlyIf { appleGetBootedDevice() == null }
 		task.dependsOn(iosCreateIphone)
 		task.doLast {
-			val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+            val devices = appleGetDevices()
+			val udid = devices.firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
+            logger.info("Booting udid=$udid")
+            if (logger.isInfoEnabled) {
+                for (device in devices) {
+                    logger.info(" - $device")
+                }
+            }
 			execLogger { it.commandLine("xcrun", "simctl", "boot", udid) }
 			execLogger { it.commandLine("sh", "-c", "open `xcode-select -p`/Applications/Simulator.app/ --args -CurrentDeviceUDID $udid") }
 		}
@@ -791,19 +802,19 @@ fun Project.configureNativeIos() {
 			}
 		}
 
-		tasks.create("installIosSimulator$debugSuffix", Task::class.java) { task ->
+		val installIosSimulator = tasks.create("installIosSimulator$debugSuffix", Task::class.java) { task ->
 			val buildTaskName = "iosBuildSimulator$debugSuffix"
 			task.group = GROUP_KORGE_INSTALL
 
 			task.dependsOn(buildTaskName, "iosBootSimulator")
 			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				val udid = appleGetDevices().firstOrNull { it.name == "iPhone $iphoneVersion" }?.udid ?: error("Can't find iPhone $iphoneVersion device")
-				execLogger { it.commandLine("xcrun", "simctl", "install", udid, appFolder.absolutePath) }
+                val device = appleGetInstallDevice(iphoneVersion)
+				execLogger { it.commandLine("xcrun", "simctl", "install", device.udid, appFolder.absolutePath) }
 			}
 		}
 
-		tasks.create("installIosDevice$debugSuffix", Task::class.java) { task ->
+		val installIosDevice = tasks.create("installIosDevice$debugSuffix", Task::class.java) { task ->
 			task.group = GROUP_KORGE_INSTALL
 			val buildTaskName = "iosBuildDevice$debugSuffix"
 			task.dependsOn("installIosDeploy", buildTaskName)
@@ -822,7 +833,18 @@ fun Project.configureNativeIos() {
 				commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
 			}
 		}
-	}
+
+        tasks.createTyped<Exec>("runIosSimulator$debugSuffix") {
+            group = GROUP_KORGE_RUN
+            dependsOn(installIosSimulator)
+            doFirst {
+                val device = appleGetInstallDevice(iphoneVersion)
+                // xcrun simctl launch --console 7F49203A-1F16-4DEE-B9A2-7A1BB153DF70 com.sample.demo.app-X64-Debug
+                //logger.info(params.joinToString(" "))
+                execLogger { it.commandLine("xcrun", "simctl", "launch", "--console", device.udid, "${korge.id}.app-X64-$debugSuffix") }
+            }
+        }
+    }
 
 
 	tasks.create("iosEraseAllSimulators") { task ->
@@ -860,11 +882,17 @@ fun Project.appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
 	val res = Json.parse(execOutput("xcrun", "simctl", "list", "-j", "devices"))
 	val devices = res["devices"]
 	val oses = devices.keys.map { it.str }
-	//val iosOs = oses.firstOrNull { it.contains(os) } ?: error("No iOS devices created")
-	val iosOs = oses.firstOrNull { it.contains(os) } ?: listOf<String>()
-	devices[iosOs].list.map {
+	val iosOses = oses.filter { it.contains(os) }
+    iosOses.map { devices[it].list }.flatten().map {
 		IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
 	}
+}
+
+fun Project.appleGetInstallDevice(iphoneVersion: Int): IosDevice {
+    val devices = appleGetDevices()
+    return devices.firstOrNull { it.name == "iPhone $iphoneVersion" && it.booted }
+        ?: devices.firstOrNull { it.name.contains("iPhone") && it.booted }
+        ?: error("Can't find suitable booted iPhone $iphoneVersion device")
 }
 
 fun Project.appleGetBootedDevice(os: String = "iOS"): IosDevice? = appleGetDevices(os).firstOrNull { it.booted }

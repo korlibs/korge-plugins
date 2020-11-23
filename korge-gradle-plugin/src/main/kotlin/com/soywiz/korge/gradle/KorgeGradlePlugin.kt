@@ -15,31 +15,6 @@ import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
-val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
-val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
-val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
-val Project.korge: KorgeExtension
-	get() {
-		val extension = project.extensions.findByName("korge") as? KorgeExtension?
-		return if (extension == null) {
-			val newExtension = KorgeExtension(this)
-			project.extensions.add("korge", newExtension)
-			newExtension
-		} else {
-			extension
-		}
-	}
-
-open class JsWebCopy() : Copy() {
-	@OutputDirectory
-	open lateinit var targetDir: File
-}
-
-val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
-//val node_modules by lazy { project.file("node_modules") }
-
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
 		System.setProperty("java.awt.headless", "true")
@@ -52,30 +27,32 @@ class KorgeGradleApply(val project: Project) {
 			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
 		}
 
-		//KorgeBuildServiceProxy.init()
+        project.korge.init(includeIndirectAndroid)
+
+        project.configureIdea()
 		project.addVersionExtension()
 		project.configureRepositories()
 		project.configureKotlin()
 
-		project.configureIdea()
+        project.configureJvm()
 
-		project.configureJvm()
-
-		if (korge.nativeEnabled) {
-			project.configureNativeDesktop()
-			if (includeIndirectAndroid) {
-				project.configureNativeAndroid()
-			}
-			if (isMacos) {
-				project.configureNativeIos()
-			}
-		}
-		project.configureJavaScript()
-
-		project.korge.init()
-
-		project.configureDependencies()
-        project.addGenResourcesTasks()
+        project.afterEvaluate {
+            if (project.korge.targets.isEmpty()) {
+                println("WARNING! No KorGE targets specified. Trying to enable all the available targets.")
+                if (korge.nativeEnabled) {
+                    project.configureNativeDesktop()
+                    if (includeIndirectAndroid) {
+                        project.configureAndroidIndirect()
+                    }
+                    if (isMacos) {
+                        project.configureNativeIos()
+                    }
+                }
+                project.configureJavaScript()
+            }
+            project.configureDependencies()
+            project.addGenResourcesTasks()
+        }
 	}
 
 	private fun Project.configureDependencies() {
@@ -141,3 +118,28 @@ open class KorgeGradlePlugin : Plugin<Project> {
 		//for (res in project.getResourcesFolders()) println("- $res")
 	}
 }
+
+val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
+val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
+
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
+val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
+val Project.korge: KorgeExtension
+    get() {
+        val extension = project.extensions.findByName("korge") as? KorgeExtension?
+        return if (extension == null) {
+            val newExtension = KorgeExtension(this)
+            project.extensions.add("korge", newExtension)
+            newExtension
+        } else {
+            extension
+        }
+    }
+
+open class JsWebCopy() : Copy() {
+    @OutputDirectory
+    open lateinit var targetDir: File
+}
+
+val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+//val node_modules by lazy { project.file("node_modules") }
