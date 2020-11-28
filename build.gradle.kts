@@ -73,6 +73,7 @@ File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/Build
 package com.soywiz.korge.gradle
 
 object BuildVersions {
+    const val KRYPTO = "${version("krypto")}"
 	const val KLOCK = "${version("klock")}"
 	const val KDS = "${version("kds")}"
 	const val KMEM = "${version("kmem")}"
