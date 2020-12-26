@@ -177,10 +177,10 @@ fun Project.configureAndroidIndirect() {
 							}
 							line("signingConfigs") {
 								line("release") {
-									line("storeFile file(findProperty('RELEASE_STORE_FILE') ?: 'korge.keystore')")
-									line("storePassword findProperty('RELEASE_STORE_PASSWORD') ?: 'password'")
-									line("keyAlias findProperty('RELEASE_KEY_ALIAS') ?: 'korge'")
-									line("keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: 'password'")
+									line("storeFile file(findProperty('RELEASE_STORE_FILE') ?: ${korge.androidReleaseSignStoreFile.quoted})")
+									line("storePassword findProperty('RELEASE_STORE_PASSWORD') ?: ${korge.androidReleaseSignStorePassword.quoted}")
+									line("keyAlias findProperty('RELEASE_KEY_ALIAS') ?: ${korge.androidReleaseSignKeyAlias.quoted}")
+									line("keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: ${korge.androidReleaseSignKeyPassword.quoted}")
 								}
 							}
 							line("buildTypes") {
