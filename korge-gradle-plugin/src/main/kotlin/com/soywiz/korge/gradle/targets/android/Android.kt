@@ -345,7 +345,7 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
 
 					line("<activity android:name=\".MainActivity\"")
 					indent {
-                        line("android:banner=\"@drawable/app_icon\"")
+                        line("android:banner=\"@drawable/app_banner\"")
                         line("android:icon=\"@drawable/app_icon\"")
                         line("android:label=\"$androidAppName\"")
                         line("android:logo=\"@drawable/app_icon\"")
@@ -384,6 +384,9 @@ fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: Androi
 		ensureParents().writeBytesIfChanged(korge.getIconBytes())
 	}
     File(outputFolder, "src/main/res/drawable/app_icon.png").conditionally(ifNotExists) {
+        ensureParents().writeBytesIfChanged(korge.getIconBytes())
+    }
+    File(outputFolder, "src/main/res/drawable/app_banner.png").conditionally(ifNotExists) {
         ensureParents().writeBytesIfChanged(korge.getBannerBytes(432, 243))
     }
 	File(outputFolder, "src/main/java/MainActivity.kt").conditionally(ifNotExists) {
