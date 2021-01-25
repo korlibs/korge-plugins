@@ -2,34 +2,12 @@ import java.net.*
 import java.util.*
 import java.io.*
 
-buildscript {
-	val kotlinVersion: String by project
-	val isKotlinDev = kotlinVersion.contains("-release")
-    val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
-	repositories {
-		mavenLocal()
-		maven { url = uri("https://plugins.gradle.org/m2/") }
-		if (isKotlinDev || isKotlinEap) {
-            maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-		}
-	}
-	dependencies {
-		classpath("com.gradle.publish:plugin-publish-plugin:0.10.1")
-		classpath("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:$kotlinVersion")
-    }
-}
-
 plugins {
     idea
 	id("com.moowork.node") version "1.3.1"
-	id("com.gradle.plugin-publish") version "0.10.1" apply false
+	id("com.gradle.plugin-publish") version "0.12.0" apply false
+    id("org.jetbrains.kotlin.jvm")
 }
-
-
-val kotlinVersion: String by project
-val isKotlinDev = kotlinVersion.contains("-release")
-val isKotlinEap = kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
 
 allprojects {
     val forcedVersion = System.getenv("FORCED_KORGE_PLUGINS_VERSION")
@@ -37,31 +15,9 @@ allprojects {
 
     //println(project.version)
 	repositories {
-		mavenLocal {
-			content {
-				excludeGroup("Kotlin/Native")
-			}
-		}
-		maven {
-			url = uri("https://dl.bintray.com/korlibs/korlibs")
-			content {
-				excludeGroup("Kotlin/Native")
-			}
-		}
-		jcenter {
-			content {
-				excludeGroup("Kotlin/Native")
-			}
-		}
-		google {
-			content {
-				excludeGroup("Kotlin/Native")
-			}
-		}
-		if (isKotlinDev || isKotlinEap) {
-            maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-			maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-		}
+		mavenLocal()
+		jcenter()
+		google()
 	}
 }
 
@@ -99,7 +55,6 @@ subprojects {
 		mavenLocal()
 		jcenter()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-		maven { url = uri("https://dl.bintray.com/korlibs/korlibs") }
 	}
 
 	apply(plugin = "maven")
