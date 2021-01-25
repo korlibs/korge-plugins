@@ -21,6 +21,7 @@ buildscript {
 }
 
 plugins {
+    idea
 	id("com.moowork.node") version "1.3.1"
 	id("com.gradle.plugin-publish") version "0.10.1" apply false
 }
@@ -182,4 +183,10 @@ val publish by tasks.creating {
 			println(inputStream.readBytes().toString(Charsets.UTF_8))
 		}
 	}
+}
+
+idea {
+    module {
+        excludeDirs = excludeDirs + listOf("@old", ".idea", "gradle", "korge-flash-plugin").map { file(it) }.toSet()
+    }
 }
