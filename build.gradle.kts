@@ -25,11 +25,20 @@ fun version(name: String): String? {
 	return properties["${name}Version"]?.toString()
 }
 
+val gitVersion = try {
+    Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
+        .readText().lines().first().trim()
+} catch (e: Throwable) {
+    e.printStackTrace()
+    "unknown"
+}
+
 //new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
 File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt").writeText("""
 package com.soywiz.korge.gradle
 
 object BuildVersions {
+    const val GIT = "$gitVersion"
     const val KRYPTO = "${version("krypto")}"
 	const val KLOCK = "${version("klock")}"
 	const val KDS = "${version("kds")}"
@@ -44,6 +53,9 @@ object BuildVersions {
     const val JNA = "${version("jna")}"
 	const val COROUTINES = "${version("coroutines")}"
 	const val ANDROID_BUILD = "${version("androidBuildGradle")}"
+
+    val ALL_PROPERTIES = listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD)
+    val ALL = ALL_PROPERTIES.associate { it.name to it.get() }
 }
 """)
 
