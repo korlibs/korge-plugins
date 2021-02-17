@@ -2,7 +2,7 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-    const val GIT = "v2.0.6.0-1-g48141b47-dirty"
+    const val GIT = "v2.0.6.0-2-gc136b33a-dirty"
     const val KRYPTO = "2.0.6"
 	const val KLOCK = "2.0.6"
 	const val KDS = "2.0.6"

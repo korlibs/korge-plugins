@@ -2,7 +2,7 @@ package com.soywiz.korge.gradle.targets.ios
 
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.desktop.prepareKotlinNativeBootstrap
+import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
@@ -59,6 +59,7 @@ fun Project.configureNativeIos() {
 
 	kotlin.apply {
 		for (target in iosTargets) {
+            target.configureKotlinNativeTarget(project)
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
@@ -91,19 +92,30 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("installXcodeGen") { task ->
-		task.apply {
-			onlyIf { !File("/usr/local/bin/xcodegen").exists() }
-			doLast {
-				val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
-				execLogger {
-					it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")
-					it.workingDir(korlibsFolder)
+    val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
+    val xcodeGenFolder = korlibsFolder["XcodeGen"]
+    val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")
+    val xcodeGenExecutable = xcodeGenFolder[".build/release/xcodegen"]
+    val xcodeGenGitTag = "2.18.0"
 
-				}
+    tasks.create("installXcodeGen") { task ->
+		task.apply {
+			onlyIf { !xcodeGenLocalExecutable.exists() && !xcodeGenExecutable.exists() }
+			doLast {
+                if (!xcodeGenFolder[".git"].isDirectory) {
+                    execLogger {
+                        //it.commandLine("git", "clone", "--depth", "1", "--branch", xcodeGenGitTag, "https://github.com/yonaskolb/XcodeGen.git")
+                        it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")
+                        it.workingDir(korlibsFolder)
+                    }
+                }
+                execLogger {
+                    it.commandLine("git", "checkout", xcodeGenGitTag)
+                    it.workingDir(xcodeGenFolder)
+                }
 				execLogger {
-					it.commandLine("make")
-					it.workingDir(korlibsFolder["XcodeGen"])
+					it.commandLine("make", "build")
+					it.workingDir(xcodeGenFolder)
 				}
 			}
 		}
@@ -757,7 +769,7 @@ fun Project.configureNativeIos() {
 
 			execLogger {
 				it.workingDir(folder)
-				it.commandLine("xcodegen")
+				it.commandLine(xcodeGenExecutable.takeIfExists() ?: xcodeGenLocalExecutable.takeIfExists() ?: error("Can't find xcodegen"))
 			}
 		}
 	}
@@ -892,7 +904,7 @@ fun Project.configureNativeIos() {
 	tasks.create("installIosDeploy", Exec::class.java) { task ->
 		task.onlyIf { !node_modules["ios-deploy"].exists() }
 		task.setWorkingDir(korgeCacheDir)
-		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.10.0")
+		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.11.4")
 		// @TODO: Automatically install ios-deploy
 	}
 }
