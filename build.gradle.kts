@@ -16,7 +16,7 @@ allprojects {
     //println(project.version)
 	repositories {
 		mavenLocal()
-		jcenter()
+        mavenCentral()
 		google()
 	}
 }
@@ -65,7 +65,7 @@ val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findPr
 subprojects {
 	repositories {
 		mavenLocal()
-		jcenter()
+		mavenCentral()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
 	}
 

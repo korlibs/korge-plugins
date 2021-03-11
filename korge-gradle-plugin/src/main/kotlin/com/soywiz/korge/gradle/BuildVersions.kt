@@ -2,20 +2,20 @@
 package com.soywiz.korge.gradle
 
 object BuildVersions {
-    const val GIT = "v2.0.7.0-1-g120f263f-dirty"
-    const val KRYPTO = "2.0.6"
-	const val KLOCK = "2.0.6"
-	const val KDS = "2.0.7"
-	const val KMEM = "2.0.7"
-	const val KORMA = "2.0.7"
-	const val KORIO = "2.0.8"
-	const val KORIM = "2.0.7"
-	const val KORAU = "2.0.7"
-	const val KORGW = "2.0.7"
-	const val KORGE = "2.0.7"
-	const val KOTLIN = "1.4.30"
+    const val GIT = "v2.0.8.1-dirty"
+    const val KRYPTO = "2.0.7"
+	const val KLOCK = "2.0.7"
+	const val KDS = "2.0.9"
+	const val KMEM = "2.0.10"
+	const val KORMA = "2.0.9"
+	const val KORIO = "2.0.10"
+	const val KORIM = "2.0.9"
+	const val KORAU = "2.0.11"
+	const val KORGW = "2.0.9"
+	const val KORGE = "2.0.9"
+	const val KOTLIN = "1.4.31"
     const val JNA = "5.7.0"
-	const val COROUTINES = "1.4.2"
+	const val COROUTINES = "1.4.3"
 	const val ANDROID_BUILD = "4.0.1"
 
     val ALL_PROPERTIES = listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD)
