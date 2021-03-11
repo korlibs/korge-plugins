@@ -130,7 +130,7 @@ fun Project.configureAndroidIndirect() {
 						}
 						line("repositories") {
 							line("mavenLocal()")
-                            line("mavenCenter()")
+                            line("mavenCentral()")
 							line("google()")
 						}
 
