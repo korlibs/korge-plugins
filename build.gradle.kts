@@ -164,21 +164,21 @@ tasks.create("externalReleaseMavenCentral", GradleBuild::class.java) {
         task.dir = tempDir!!
         File(tempDir, "settings.gradle").writeText("")
         File(tempDir, "build.gradle").writeText("""
-			\tbuildscript {
-			\t\trepositories {
-			\t\t\tmavenLocal()
-			\t\t\tmavenCentral()
-			\t\t\tgoogle()
-			\t\t\tmaven { url = uri("https://plugins.gradle.org/m2/") }
-			\t\t}
-			\t\tdependencies {
-			\t\t\tclasspath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:${project.version}")
-			\t\t}
-			\t}
-			
+            buildscript {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    google()
+                    maven { url = uri("https://plugins.gradle.org/m2/") }
+                }
+                dependencies {
+                    classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:${project.version}")
+                }
+            }
+        
 			project.group = '${project.group}'
-			\tapply plugin: "com.soywiz.korlibs.easy-kotlin-mpp-gradle-plugin"
-		""")
+            apply plugin: "com.soywiz.korlibs.easy-kotlin-mpp-gradle-plugin"
+		""".trimIndent())
     }
     task.doLast {
         tempDir?.deleteRecursively()
