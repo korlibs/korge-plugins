@@ -172,7 +172,7 @@ tasks.create("externalReleaseMavenCentral", GradleBuild::class.java) {
                     maven { url = uri("https://plugins.gradle.org/m2/") }
                 }
                 dependencies {
-                    classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:${project.version}")
+                    classpath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:0.14.3")
                 }
             }
         
