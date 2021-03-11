@@ -6,7 +6,9 @@ import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.*
 
+@Suppress("UnstableApiUsage")
 fun Project.configureAndroidDirect() {
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
@@ -25,7 +27,7 @@ fun Project.configureAndroidDirect() {
     android.apply {
         packagingOptions {
             for (pattern in androidExcludePatterns()) {
-                it.exclude(pattern)
+                exclude(pattern)
             }
         }
         compileSdkVersion(28)

@@ -10,6 +10,10 @@ env:
   FORCED_KORGE_PLUGINS_VERSION: ${{ github.ref }}
   BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
   BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
 
 jobs:
   build:
@@ -22,7 +26,9 @@ jobs:
           java-version: 1.8
       - run: chmod +x gradlew
       - run: ./gradlew check
-      - run: ./gradlew publish
+      - run: ./gradlew publishMavenPublicationToMavenRepository
+      - run: ./gradlew externalReleaseMavenCentral
+
 #  publishVersionNumbers:
 #    needs: [build]
 #    runs-on: ubuntu-latest
