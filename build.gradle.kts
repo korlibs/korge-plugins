@@ -139,7 +139,14 @@ subprojects {
 					name.set(project.name.toString())
 					description.set(project.property("project.description").toString())
 					url.set(project.property("project.scm.url").toString())
-					licenses {
+                    developers {
+                        developer {
+                            id.set(project.property("project.author.id").toString())
+                            name.set(project.property("project.author.name").toString())
+                            email.set(project.property("project.author.email").toString())
+                        }
+                    }
+                    licenses {
 						license {
 							name.set(project.property("project.license.name").toString())
 							url.set(project.property("project.license.url").toString())
