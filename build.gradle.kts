@@ -1,12 +1,15 @@
-import java.net.*
 import java.util.*
 import java.io.*
+import java.nio.file.Files
+import kotlin.io.path.*
 
 plugins {
     idea
-	id("com.moowork.node") version "1.3.1"
+	//id("com.moowork.node") version "1.3.1"
 	id("com.gradle.plugin-publish") version "0.12.0" apply false
     id("org.jetbrains.kotlin.jvm")
+    //signing
+    //`maven-publish`
 }
 
 allprojects {
@@ -59,8 +62,10 @@ object BuildVersions {
 }
 """)
 
-val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
-val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayKey") ?: System.getenv("BINTRAY_KEY"))?.toString()
+//val publishUser = (rootProject.findProperty("BINTRAY_USER") ?: project.findProperty("bintrayUser") ?: System.getenv("BINTRAY_USER"))?.toString()
+//val publishPassword = (rootProject.findProperty("BINTRAY_KEY") ?: project.findProperty("bintrayKey") ?: System.getenv("BINTRAY_KEY"))?.toString()
+val sonatypePublishUser = (System.getenv("SONATYPE_USERNAME") ?: rootProject.findProperty("SONATYPE_USERNAME")?.toString() ?: project.findProperty("sonatypeUsername")?.toString())
+val sonatypePublishPassword = (System.getenv("SONATYPE_PASSWORD") ?: rootProject.findProperty("SONATYPE_PASSWORD")?.toString() ?: project.findProperty("sonatypePassword")?.toString())
 
 subprojects {
 	repositories {
@@ -71,7 +76,25 @@ subprojects {
 
 	apply(plugin = "maven")
 	apply(plugin = "maven-publish")
+    apply(plugin = "signing")
     apply(plugin = "kotlin")
+
+
+    val signingSecretKeyRingFile = System.getenv("ORG_GRADLE_PROJECT_signingSecretKeyRingFile") ?: project.findProperty("signing.secretKeyRingFile")?.toString()
+
+// gpg --armor --export-secret-keys foobar@example.com | awk 'NR == 1 { print "signing.signingKey=" } 1' ORS='\\n'
+    val signingKey = System.getenv("ORG_GRADLE_PROJECT_signingKey") ?: project.findProperty("signing.signingKey")?.toString()
+    val signingPassword = System.getenv("ORG_GRADLE_PROJECT_signingPassword") ?: project.findProperty("signing.password")?.toString()
+
+    if (signingSecretKeyRingFile != null || signingKey != null) {
+        project.extensions.getByType(SigningExtension::class.java).apply {
+            isRequired = !project.version.toString().endsWith("-SNAPSHOT")
+            if (signingKey != null) {
+                useInMemoryPgpKeys(signingKey, signingPassword)
+            }
+            sign(project.extensions.getByType(PublishingExtension::class.java).publications)
+        }
+    }
 
 	//println("project: ${project.name}")
 
@@ -88,14 +111,18 @@ subprojects {
 	}
 
 	publishing.apply {
-		if (publishUser != null && publishPassword != null) {
+		if (sonatypePublishUser != null && sonatypePublishPassword != null) {
 			repositories {
 				maven {
 					credentials {
-						username = publishUser
-						password = publishPassword
+						username = sonatypePublishUser
+						password = sonatypePublishPassword
 					}
-					url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
+                    if (version.toString().contains("-SNAPSHOT")) {
+                        url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                    } else {
+                        url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                    }
 				}
 			}
 		}
@@ -127,8 +154,42 @@ subprojects {
 	}
 }
 
+tasks.create("externalReleaseMavenCentral", GradleBuild::class.java) {
+    val task = this
+    task.dependsOn("publishToMavenLocal")
+    task.tasks = listOf("releaseMavenCentral")
+    var tempDir: File? = null
+    task.doFirst {
+        tempDir = Files.createTempDirectory("prefix-").toFile()
+        println("Created dir $tempDir...")
+        task.dir = tempDir!!
+        File(tempDir, "settings.gradle").writeText("")
+        File(tempDir, "build.gradle").writeText("""
+			\tbuildscript {
+			\t\trepositories {
+			\t\t\tmavenLocal()
+			\t\t\tmavenCentral()
+			\t\t\tgoogle()
+			\t\t\tmaven { url = uri("https://plugins.gradle.org/m2/") }
+			\t\t}
+			\t\tdependencies {
+			\t\t\tclasspath("com.soywiz.korlibs:easy-kotlin-mpp-gradle-plugin:${project.version}")
+			\t\t}
+			\t}
+			
+			project.group = '${project.group}'
+			\tapply plugin: "com.soywiz.korlibs.easy-kotlin-mpp-gradle-plugin"
+		""")
+    }
+    task.doLast {
+        tempDir?.deleteRecursively()
+    }
+}
+
+
 fun ByteArray.encodeBase64() = Base64.getEncoder().encodeToString(this)
 
+/*
 val publish by tasks.creating {
 	subprojects {
 		dependsOn(":${project.name}:publish")
@@ -151,6 +212,7 @@ val publish by tasks.creating {
 		}
 	}
 }
+ */
 
 idea {
     module {
