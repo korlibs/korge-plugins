@@ -156,7 +156,6 @@ subprojects {
 
 tasks.create("externalReleaseMavenCentral", GradleBuild::class.java) {
     val task = this
-    task.dependsOn("publishToMavenLocal")
     task.tasks = listOf("releaseMavenCentral")
     var tempDir: File? = null
     task.doFirst {
