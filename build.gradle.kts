@@ -37,7 +37,7 @@ val gitVersion = try {
 }
 
 //new File("korge-build/src/main/kotlin/com/soywiz/korge/build/BuildVersions.kt").write("""
-File(rootDir, "korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt").writeText("""
+File(rootDir, "korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt").also { it.parentFile.mkdirs() }.writeText("""
 package com.soywiz.korge.gradle
 
 object BuildVersions {
@@ -94,6 +94,10 @@ subprojects {
             }
             sign(project.extensions.getByType(PublishingExtension::class.java).publications)
         }
+    }
+
+    kotlin.sourceSets.main.configure {
+        kotlin.srcDir(File(buildDir, "srcgen"))
     }
 
 	//println("project: ${project.name}")
