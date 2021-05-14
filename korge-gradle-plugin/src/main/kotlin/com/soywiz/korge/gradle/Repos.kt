@@ -11,8 +11,25 @@ fun Project.configureRepositories() {
         mavenCentral().content {
             it.excludeGroup("Kotlin/Native")
         }
+		//jcenter().content { it.excludeGroup("Kotlin/Native") }
         google().content {
-            it.excludeGroup("Kotlin/Native")
+        }
+        if (isKotlinDevOrEap) {
+            maven {
+                it.url = URI("https://dl.bintray.com/kotlin/kotlin-eap")
+                it.content { it.excludeGroup("Kotlin/Native") }
+            }
+            maven {
+                it.url = URI("https://dl.bintray.com/kotlin/kotlin-dev")
+                it.content { it.excludeGroup("Kotlin/Native") }
+            }
+        }
+        if (checkBintrayArtifacts) {
+            maven {
+                it.url = URI("https://dl.bintray.com/korlibs/korlibs")
+                it.content { it.excludeGroup("Kotlin/Native") }
+            }
         }
 	}
 }
+

@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
 import java.time.*
 import java.util.*
+import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
@@ -91,6 +92,18 @@ class KorgeExtension(val project: Project) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
 	}
 
+    companion object {
+        val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
+
+        fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
+
+        fun verifyId(id: String) {
+            if (!isIdValid(id)) {
+                throw InvalidNameException("'$id' is invalid. Should be separed by '.', shouldn't have spaces, and each component should not start by a number. Example: 'com.test.demo2'")
+            }
+        }
+    }
+
     internal var targets = LinkedHashSet<String>()
 
     private fun target(name: String, block: () -> Unit) {
@@ -100,6 +113,9 @@ class KorgeExtension(val project: Project) {
         }
     }
 
+    // https://github.com/JetBrains/kotlin/pull/4339
+    var mingwX64PatchedLegacyMemoryManager: Boolean = true
+    
     /**
      * Configures JVM target
      */
@@ -208,6 +224,17 @@ class KorgeExtension(val project: Project) {
         targetIos()
     }
 
+    /** Enables kotlinx.serialization */
+    fun serialization() {
+        project.plugins.apply("kotlinx-serialization")
+    }
+
+    /** Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json` */
+    fun serializationJson() {
+        serialization()
+        project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
+    }
+
     val bundles = KorgeBundles(project)
 
     @JvmOverloads
@@ -220,6 +247,11 @@ class KorgeExtension(val project: Project) {
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
+        get() = field
+        set(value) {
+            verifyId(value)
+            field = value
+        }
 	var version: String = "0.0.1"
     var preferredIphoneSimulatorVersion: Int = 8
 
@@ -329,6 +361,8 @@ class KorgeExtension(val project: Project) {
     var androidReleaseSignStorePassword: String = "password"
     var androidReleaseSignKeyAlias: String = "korge"
     var androidReleaseSignKeyPassword: String = "password"
+
+    var iosDevelopmentTeam: String? = null
 
 	// Already included in core
 	fun supportExperimental3d() = Unit

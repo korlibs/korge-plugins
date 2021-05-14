@@ -14,8 +14,6 @@ import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.lang.management.*
 
-val Project.node_modules get() = korgeCacheDir["node_modules"]
-
 private object JavaScriptClass
 
 fun Project.configureJavaScript() {
@@ -63,7 +61,9 @@ fun Project.configureJavaScript() {
             val targetDir = this.outputs.files.first()
             logger.debug("jsProcessResources.targetDir: $targetDir")
             val jsMainCompilation = kotlin.js().compilations["main"]!!
-            val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+            //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+            // @TODO: How to get the actual .js file generated/served?
+            val jsFile = File("${project.name}.js").name
             val resourcesFolders = jsMainCompilation.allKotlinSourceSets
                 .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
             //println("jsFile: $jsFile")

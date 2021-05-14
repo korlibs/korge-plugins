@@ -167,6 +167,11 @@ private fun Project.addNativeRun() {
 				//(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
 
 				val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
+
+                if (target == "mingwX64") {
+                    //compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(mingwX64SelectPatchedMemoryManager)
+                }
+
 				val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 
 				val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->

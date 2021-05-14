@@ -1,11 +1,5 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.gradle.targets.android.*
-import com.soywiz.korge.gradle.targets.desktop.*
-import com.soywiz.korge.gradle.targets.ios.*
-import com.soywiz.korge.gradle.targets.isMacos
-import com.soywiz.korge.gradle.targets.js.*
-import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
 import groovy.lang.*
 import org.gradle.api.*
@@ -156,5 +150,5 @@ open class JsWebCopy() : Copy() {
     open lateinit var targetDir: File
 }
 
-val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+var Project.korgeCacheDir by projectExtension { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
 //val node_modules by lazy { project.file("node_modules") }

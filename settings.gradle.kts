@@ -11,5 +11,3 @@ rootProject.name = "korge-plugins-root"
 //include(":korge-build")
 include(":korge-gradle-plugin")
 //include(":korge-gradle-plugin-android")
-
-//enableFeaturePreview("GRADLE_METADATA")
