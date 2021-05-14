@@ -56,8 +56,9 @@ object BuildVersions {
     const val JNA = "${version("jna")}"
 	const val COROUTINES = "${version("coroutines")}"
 	const val ANDROID_BUILD = "${version("androidBuildGradle")}"
+    const val KOTLIN_SERIALIZATION = "${version("kotlinSerialization")}"
 
-    val ALL_PROPERTIES = listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD)
+    val ALL_PROPERTIES = listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION)
     val ALL = ALL_PROPERTIES.associate { it.name to it.get() }
 }
 """)
