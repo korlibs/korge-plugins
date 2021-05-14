@@ -74,7 +74,6 @@ subprojects {
 		maven { url = uri("https://plugins.gradle.org/m2/") }
 	}
 
-	apply(plugin = "maven")
 	apply(plugin = "maven-publish")
     apply(plugin = "signing")
     apply(plugin = "kotlin")
