@@ -40,8 +40,8 @@ fun Project.configureAndroidDirect() {
         defaultConfig {
             it.multiDexEnabled = true
             it.applicationId = project.korge.id
-            it.minSdkVersion = DefaultApiVersion(19)
-            it.targetSdkVersion = DefaultApiVersion(28)
+            it.minSdkVersion = DefaultApiVersion(project.korge.androidMinSdk)
+            it.targetSdkVersion = DefaultApiVersion(project.korge.androidTargetSdk)
             it.versionCode = 1
             it.versionName = "1.0"
             it.testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
