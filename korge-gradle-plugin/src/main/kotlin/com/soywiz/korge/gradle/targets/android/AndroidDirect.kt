@@ -36,7 +36,7 @@ fun Project.configureAndroidDirect() {
                 this.exclude(pattern)
             }
         }
-        compileSdkVersion(28)
+        compileSdkVersion(project.korge.androidCompileSdk)
         defaultConfig {
             it.multiDexEnabled = true
             it.applicationId = project.korge.id
