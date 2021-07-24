@@ -18,21 +18,26 @@ private val RELEASE = NativeBuildType.RELEASE
 private val DEBUG = NativeBuildType.DEBUG
 private val RELEASE_DEBUG = listOf(NativeBuildType.RELEASE, NativeBuildType.DEBUG)
 
-private val DESKTOP_NATIVE_TARGET = when {
+private val Project.DESKTOP_NATIVE_TARGET get() = when {
 	isWindows -> "mingwX64"
 	isMacos -> "macosX64"
 	isLinux -> "linuxX64"
 	else -> "unknownX64"
 }
 
-val DESKTOP_NATIVE_TARGETS = when {
-	isWindows -> listOf("mingwX64")
-	isMacos -> listOf("macosX64")
-	isLinux -> listOf("linuxX64")
-	else -> listOf("mingwX64", "linuxX64", "macosX64")
+val Project.DESKTOP_NATIVE_TARGETS get() = when {
+	isWindows -> listOfNotNull("mingwX64")
+	isMacos -> listOfNotNull("macosX64")
+	isLinux -> listOfNotNull("linuxX64", "linuxArm32Hfp".takeIf { korge.enableLinuxArm })
+	else -> listOfNotNull(
+        "mingwX64",
+        "linuxX64",
+        "linuxArm32Hfp".takeIf { korge.enableLinuxArm },
+        "macosX64"
+    )
 }
 
-private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
+private val Project.cnativeTarget get() = DESKTOP_NATIVE_TARGET.capitalize()
 
 val Project.nativeDesktopBootstrapFile get() = File(buildDir, "platforms/native-desktop/bootstrap.kt")
 
@@ -103,12 +108,22 @@ fun Project.configureNativeDesktop() {
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {
 
-		for (target in when {
-			isWindows -> listOf(kotlin.mingwX64())
-			isMacos -> listOf(kotlin.macosX64())
-			isLinux -> listOf(kotlin.linuxX64())
-			else -> listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())
-		}) {
+		for (target in ArrayList<KotlinNativeTarget>().apply {
+            when {
+                isWindows -> listOfNotNull(kotlin.mingwX64())
+                isMacos -> listOfNotNull(kotlin.macosX64())
+                isLinux -> listOfNotNull(
+                    kotlin.linuxX64(),
+                    if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null
+                )
+                else -> listOfNotNull(
+                    kotlin.macosX64(),
+                    kotlin.linuxX64(),
+                    if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null,
+                    kotlin.mingwX64()
+                )
+            }
+        }) {
 			val mainCompilation = target.compilations["main"]
 			//println("TARGET: $target")
 			//println(this.binariesTaskName)
@@ -125,6 +140,10 @@ fun Project.configureNativeDesktop() {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
+			if (isLinux && target.endsWith("Arm32Hfp")) {
+				// don't create an Arm32Hfp test task
+				continue
+			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
 			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
 			val task = project.addTask<Copy>(taskName) { task ->
