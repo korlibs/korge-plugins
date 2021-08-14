@@ -409,10 +409,19 @@ class KorgeExtension(val project: Project) {
 
     fun supportBox2d() {
         // https://awesome.korge.org/
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::7439e5c7de7442f2cd33a1944846d44aea31af0a##9fd9d54abd8abc4736fd3439f0904141d9b6a26e9e2f1e1f8e2ed10c51f490fd")
+        //bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::7439e5c7de7442f2cd33a1944846d44aea31af0a##9fd9d54abd8abc4736fd3439f0904141d9b6a26e9e2f1e1f8e2ed10c51f490fd")
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
-	fun admob(ADMOB_APP_ID: String) {
+    fun supportVideo() {
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-korvi:${BuildVersions.KORGE}", registerPlugin = false)
+    }
+
+    fun supportKorvi() {
+        supportVideo()
+    }
+
+    fun admob(ADMOB_APP_ID: String) {
         bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
         config("ADMOB_APP_ID", ADMOB_APP_ID)
     }
